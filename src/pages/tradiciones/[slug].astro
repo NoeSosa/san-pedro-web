@@ -1,0 +1,59 @@
+---
+// src/pages/tradiciones/[slug].astro
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content"; // <--- IMPORTANTE: Importamos el tipo
+import Layout from "../../layouts/Layout.astro";
+
+// 1. Generamos las rutas estáticas
+export async function getStaticPaths() {
+    const tradiciones = await getCollection("tradiciones");
+
+    // AQUI ESTÁ EL CAMBIO: Le decimos explícitamente que 'entry' es una tradición
+    return tradiciones.map((entry: CollectionEntry<"tradiciones">) => ({
+        params: { slug: entry.slug },
+        props: { entry },
+    }));
+}
+// 2. DEFINIMOS EL TIPO DE PROPS (Esto arregla el error rojo)
+interface Props {
+    entry: CollectionEntry<"tradiciones">;
+}
+
+// 3. Ahora Astro sabe que 'entry' tiene .data y .render()
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<Layout title={entry.data.title}>
+    <div class="relative h-[50vh]">
+        <img
+            src={entry.data.image}
+            alt={entry.data.title}
+            class="w-full h-full object-cover"
+        />
+        <div
+            class="absolute inset-0 bg-black/50 flex items-center justify-center"
+        >
+            <h1
+                class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg px-4 text-center"
+            >
+                {entry.data.title}
+            </h1>
+        </div>
+    </div>
+
+    <article class="container mx-auto px-6 py-12 max-w-3xl">
+        <div class="prose prose-lg prose-blue mx-auto text-gray-700">
+            <Content />
+        </div>
+
+        <div class="mt-12 border-t pt-8">
+            <a
+                href="/#tradicion"
+                class="text-gob-primary font-bold hover:text-gob-accent flex items-center gap-2"
+            >
+                &larr; Volver a Tradiciones
+            </a>
+        </div>
+    </article>
+</Layout>

@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+    /* Colores institucionales */
+    --color-gob-primary: #1a3c5e;
+    /* Azul */
+    --color-gob-accent: #d4a017;
+    /* Dorado */
+    --color-gob-light: #f4f4f4;
+
+    /* Fuentes (Opcional, usa la del sistema por defecto) */
+    --font-sans: "Segoe UI", system-ui, sans-serif;
+}

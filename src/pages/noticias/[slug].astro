@@ -1,0 +1,109 @@
+---
+// src/pages/noticias/[slug].astro
+import { getCollection, getEntry } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+// 1. Generamos las rutas estáticas
+export async function getStaticPaths() {
+    const noticias = await getCollection("noticias");
+    return noticias.map((entry) => ({
+        params: { slug: entry.slug },
+        props: { entry },
+    }));
+}
+
+interface Props {
+    entry: CollectionEntry<"noticias">;
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// --- LÓGICA EXTRA PARA NOTICIAS ---
+
+// A. Formatear la fecha (Ej: "20 de noviembre de 2025")
+const formattedDate = new Intl.DateTimeFormat("es-MX", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+}).format(entry.data.date);
+
+// B. Obtener la Etiqueta (Badge) y su color
+// Usamos 'getEntry' para buscar los datos de la etiqueta relacionada
+let etiqueta = null;
+if (entry.data.tags) {
+    etiqueta = await getEntry(entry.data.tags);
+}
+---
+
+<Layout title={entry.data.title}>
+    <div class="relative h-[60vh]">
+        <img
+            src={entry.data.image}
+            alt={entry.data.title}
+            class="w-full h-full object-cover"
+        />
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 flex items-end justify-center pb-16"
+        >
+            <div class="container mx-auto px-6 text-center max-w-4xl">
+                {
+                    etiqueta && (
+                        <span
+                            class={`inline-block px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider mb-4 ${etiqueta.data.color}`}
+                        >
+                            {etiqueta.data.name}
+                        </span>
+                    )
+                }
+
+                <h1
+                    class="text-3xl md:text-5xl font-bold text-white drop-shadow-lg mb-4 leading-tight"
+                >
+                    {entry.data.title}
+                </h1>
+
+                <div
+                    class="flex items-center justify-center gap-2 text-gray-300 text-sm md:text-base font-medium"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        ></path>
+                    </svg>
+                    <span>{formattedDate}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <article class="container mx-auto px-6 py-12 max-w-3xl">
+        <div
+            class="prose prose-lg prose-blue mx-auto text-gray-700 first-letter:text-5xl first-letter:font-bold first-letter:text-gob-primary first-letter:mr-3 first-letter:float-left"
+        >
+            <Content />
+        </div>
+
+        <div class="mt-16 border-t border-gray-200 pt-8">
+            <a
+                href="/#noticias"
+                class="inline-flex items-center gap-2 text-gob-primary font-bold hover:text-gob-accent transition group"
+            >
+                <span class="group-hover:-translate-x-1 transition-transform"
+                    >&larr;</span
+                >
+                Volver a Noticias
+            </a>
+        </div>
+    </article>
+</Layout>

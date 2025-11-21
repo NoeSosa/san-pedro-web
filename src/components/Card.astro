@@ -1,0 +1,43 @@
+---
+interface Props {
+    title: string;
+    body: string;
+    imageSrc: string; // URL de la imagen
+    href: string; // A dónde redirige
+}
+
+const { title, body, imageSrc, href } = Astro.props;
+---
+
+<a
+    href={href}
+    class="group block bg-white rounded-xl shadow-lg overflow-hidden hover:-translate-y-2 transition duration-300 border border-gray-100 h-full flex flex-col"
+>
+    <div class="h-56 overflow-hidden relative">
+        <img
+            src={imageSrc}
+            alt={title}
+            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+        />
+        <div
+            class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition duration-300"
+        >
+        </div>
+    </div>
+
+    <div class="p-6 flex-grow">
+        <h3
+            class="text-xl font-bold text-gob-primary mb-2 group-hover:text-gob-accent transition-colors"
+        >
+            {title}
+        </h3>
+        <p class="text-gray-600 text-sm leading-relaxed">
+            {body}
+        </p>
+        <span
+            class="inline-block mt-4 text-sm font-bold text-gob-accent underline decoration-2 underline-offset-4"
+        >
+            Leer más &rarr;
+        </span>
+    </div>
+</a>
