@@ -1,5 +1,41 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const presidente = {
+    nombre: "Ciudadano Daniel Gutiérrez Peña",
+    cargo: "Presidente Municipal",
+};
+
+const cabildo = [
+    {
+        nombre: "Ciudadana Milania Mendoza Mendoza",
+        cargo: "Síndica Municipal",
+    },
+    {
+        nombre: "Ciudadano Romel Pérez León",
+        cargo: "Regidor de Hacienda",
+    },
+    {
+        nombre: "Ciudadana Cinthia Jaret Sosa Cristóbal",
+        cargo: "Regidora de Obras",
+    },
+    {
+        nombre: "Ciudadana Zahory Ramírez Martínez",
+        cargo: "Regidora de Educación",
+    },
+    {
+        nombre: "Ciudadano Hugo Robles Ciriaco",
+        cargo: "Regidor de Salud",
+    },
+    {
+        nombre: "Ciudadano Israel Barenca Torres",
+        cargo: "Regidor de Usos y Costumbres",
+    },
+    {
+        nombre: "Ciudadano Claudio Sosa Avendaño",
+        cargo: "Secretario Municipal",
+    },
+];
 ---
 
 <Layout title="Cabildo Municipal | San Pedro Huamelula">
@@ -12,6 +48,7 @@ import Layout from "../layouts/Layout.astro";
 
     <section class="py-20 bg-gob-light">
         <div class="container mx-auto px-6">
+            <!-- Presidente Municipal -->
             <div class="flex flex-col items-center mb-16">
                 <div
                     class="bg-white p-8 rounded-xl shadow-xl border-t-8 border-gob-accent text-center max-w-lg w-full transform hover:scale-105 transition duration-300"
@@ -28,92 +65,42 @@ import Layout from "../layouts/Layout.astro";
                     <div
                         class="text-sm font-bold text-gob-accent uppercase tracking-widest mb-1"
                     >
-                        Presidente Municipal
+                        {presidente.cargo}
                     </div>
                     <h3 class="text-2xl font-bold text-gray-800">
-                        C. [Nombre del Presidente]
+                        {presidente.nombre}
                     </h3>
                     <p class="text-gray-500 mt-2 italic">Gestión 2025 - 2027</p>
                 </div>
             </div>
 
             <h3 class="text-2xl font-bold text-gob-primary text-center mb-8">
-                Cuerpo de Regidores
+                Cuerpo de Regidores y Funcionarios
             </h3>
             <div
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto"
             >
-                <div
-                    class="bg-white p-6 rounded-lg shadow hover:shadow-md transition border-l-4 border-gob-primary flex items-center gap-4"
-                >
-                    <div
-                        class="w-16 h-16 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden"
-                    >
-                        <img
-                            src="https://via.placeholder.com/100"
-                            alt="Foto"
-                            class="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div>
-                        <div
-                            class="text-xs font-bold text-gob-accent uppercase"
-                        >
-                            Sindicatura
+                {
+                    cabildo.map((miembro) => (
+                        <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition border-l-4 border-gob-primary flex items-center gap-4">
+                            <div class="w-16 h-16 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden">
+                                <img
+                                    src="https://via.placeholder.com/100"
+                                    alt={miembro.nombre}
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-gob-accent uppercase">
+                                    {miembro.cargo}
+                                </div>
+                                <h4 class="font-bold text-lg text-gob-primary">
+                                    {miembro.nombre}
+                                </h4>
+                            </div>
                         </div>
-                        <h4 class="font-bold text-lg text-gob-primary">
-                            Lic. [Nombre]
-                        </h4>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white p-6 rounded-lg shadow hover:shadow-md transition border-l-4 border-gob-primary flex items-center gap-4"
-                >
-                    <div
-                        class="w-16 h-16 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden"
-                    >
-                        <img
-                            src="https://via.placeholder.com/100"
-                            alt="Foto"
-                            class="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div>
-                        <div
-                            class="text-xs font-bold text-gob-accent uppercase"
-                        >
-                            Reg. Hacienda
-                        </div>
-                        <h4 class="font-bold text-lg text-gob-primary">
-                            C. [Nombre]
-                        </h4>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white p-6 rounded-lg shadow hover:shadow-md transition border-l-4 border-gob-primary flex items-center gap-4"
-                >
-                    <div
-                        class="w-16 h-16 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden"
-                    >
-                        <img
-                            src="https://via.placeholder.com/100"
-                            alt="Foto"
-                            class="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div>
-                        <div
-                            class="text-xs font-bold text-gob-accent uppercase"
-                        >
-                            Reg. Salud
-                        </div>
-                        <h4 class="font-bold text-lg text-gob-primary">
-                            Dr. [Nombre]
-                        </h4>
-                    </div>
-                </div>
+                    ))
+                }
             </div>
         </div>
     </section>

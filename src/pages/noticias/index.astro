@@ -1,0 +1,170 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+// 1. Obtener datos
+const allNoticias = await getCollection("noticias");
+const allTags = await getCollection("etiquetas");
+
+// 2. Ordenar noticias por fecha
+const noticiasOrdenadas = allNoticias.sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 3. Crear mapa de etiquetas para fácil acceso a colores y nombres
+const tagMap = new Map(allTags.map((tag) => [tag.id, tag.data]));
+
+// Función auxiliar para formatear fecha
+const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("es-MX", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    }).format(date);
+};
+---
+
+<Layout title="Noticias y Comunicados | San Pedro Huamelula">
+    <div class="bg-gob-primary text-white py-16 text-center">
+        <h1 class="text-4xl font-bold">Noticias y Comunicados</h1>
+        <p class="mt-2 text-gob-accent text-lg">
+            Mantente informado sobre las acciones de tu gobierno
+        </p>
+    </div>
+
+    <section class="py-12 bg-gray-50 min-h-screen">
+        <div class="container mx-auto px-6">
+            <!-- Filtros -->
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <button
+                    class="filter-btn active px-6 py-2 rounded-full font-bold transition shadow-sm bg-gob-primary text-white hover:bg-gob-primary/90"
+                    data-filter="all"
+                >
+                    Todas
+                </button>
+                {
+                    allTags.map((tag) => (
+                        <button
+                            class="filter-btn px-6 py-2 rounded-full font-bold transition shadow-sm bg-white text-gray-600 hover:bg-gray-100"
+                            data-filter={tag.id}
+                        >
+                            {tag.data.name}
+                        </button>
+                    ))
+                }
+            </div>
+
+            <!-- Grid de Noticias -->
+            <div
+                id="news-grid"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+                {
+                    noticiasOrdenadas.map((noticia) => (
+                        <article
+                            class="news-item bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:-translate-y-1 hover:shadow-md transition duration-300"
+                            data-tag={noticia.data.tags?.id || "uncategorized"}
+                        >
+                            <div class="h-48 overflow-hidden relative">
+                                <img
+                                    src={noticia.data.image}
+                                    alt={noticia.data.title}
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-3">
+                                    {noticia.data.tags && (
+                                        <span
+                                            class={`px-2 py-1 rounded text-xs font-bold ${tagMap.get(noticia.data.tags.id)?.color}`}
+                                        >
+                                            {
+                                                tagMap.get(noticia.data.tags.id)
+                                                    ?.name
+                                            }
+                                        </span>
+                                    )}
+                                    <span class="text-xs text-gray-400">
+                                        {formatDate(noticia.data.date)}
+                                    </span>
+                                </div>
+                                <h3 class="text-xl font-bold text-gob-primary mb-3 leading-tight">
+                                    <a
+                                        href={`/noticias/${noticia.slug}`}
+                                        class="hover:text-gob-accent transition"
+                                    >
+                                        {noticia.data.title}
+                                    </a>
+                                </h3>
+                                <p class="text-gray-600 text-sm line-clamp-3 mb-4">
+                                    {noticia.data.excerpt}
+                                </p>
+                                <a
+                                    href={`/noticias/${noticia.slug}`}
+                                    class="text-gob-accent font-bold text-sm hover:underline"
+                                >
+                                    Leer más &rarr;
+                                </a>
+                            </div>
+                        </article>
+                    ))
+                }
+            </div>
+
+            <!-- Mensaje cuando no hay resultados -->
+            <div id="no-results" class="hidden text-center py-12">
+                <p class="text-gray-500 text-lg">
+                    No se encontraron noticias con esta etiqueta.
+                </p>
+            </div>
+        </div>
+    </section>
+</Layout>
+
+<script>
+    document.addEventListener("astro:page-load", () => {
+        const filterButtons = document.querySelectorAll(".filter-btn");
+        const newsItems = document.querySelectorAll(".news-item");
+        const noResultsMsg = document.getElementById("no-results");
+
+        filterButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                // Remover clase active de todos
+                filterButtons.forEach((b) => {
+                    b.classList.remove("bg-gob-primary", "text-white");
+                    b.classList.add("bg-white", "text-gray-600");
+                });
+
+                // Agregar clase active al clickeado
+                btn.classList.remove("bg-white", "text-gray-600");
+                btn.classList.add("bg-gob-primary", "text-white");
+
+                const filterValue = btn.getAttribute("data-filter");
+                let visibleCount = 0;
+
+                newsItems.forEach((item) => {
+                    const itemTag = item.getAttribute("data-tag");
+                    if (filterValue === "all" || filterValue === itemTag) {
+                        (item as HTMLElement).style.display = "block";
+                        visibleCount++;
+                    } else {
+                        (item as HTMLElement).style.display = "none";
+                    }
+                });
+
+                // Mostrar mensaje si no hay resultados
+                if (visibleCount === 0 && noResultsMsg) {
+                    noResultsMsg.classList.remove("hidden");
+                } else if (noResultsMsg) {
+                    noResultsMsg.classList.add("hidden");
+                }
+            });
+        });
+    });
+
+    // Fallback para cuando no se usa View Transitions o primera carga
+    if (!document.querySelector("script[data-astro-exec]")) {
+        const event = new Event("astro:page-load");
+        document.dispatchEvent(event);
+    }
+</script>

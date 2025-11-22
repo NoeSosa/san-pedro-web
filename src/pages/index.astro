@@ -24,7 +24,7 @@ const ultimasNoticias = noticiasOrdenadas
 	.slice(0, 6); // 6 normales
 
 // Función auxiliar para formatear fecha
-const formatDate = (date) => {
+const formatDate = (date: Date) => {
 	return new Intl.DateTimeFormat("es-MX", {
 		day: "numeric",
 		month: "long",
