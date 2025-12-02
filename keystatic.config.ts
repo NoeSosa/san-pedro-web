@@ -82,5 +82,34 @@ export default config({
                 }),
             },
         }),
+
+        // 4. NUEVA: COLECCIÓN DE DOCUMENTOS DE TRANSPARENCIA
+        documentos: collection({
+            label: 'Transparencia (PDFs)',
+            slugField: 'titulo',
+            path: 'src/content/documentos/*',
+            schema: {
+                titulo: fields.slug({ name: { label: 'Nombre del Documento' } }),
+                fecha: fields.date({ label: 'Fecha de publicación', validation: { isRequired: true } }),
+                categoria: fields.select({
+                    label: 'Categoría',
+                    options: [
+                        { label: 'Actas de Cabildo', value: 'actas' },
+                        { label: 'Finanzas y Cuenta Pública', value: 'finanzas' },
+                        { label: 'Obras Públicas', value: 'obras' },
+                        { label: 'Reglamentos y Leyes', value: 'normatividad' },
+                        { label: 'Otros', value: 'otros' },
+                    ],
+                    defaultValue: 'actas'
+                }),
+                archivo: fields.file({
+                    label: 'Subir Archivo (PDF)',
+                    directory: 'public/documentos', // Se guardarán en la carpeta pública
+                    publicPath: '/documentos/',     // Así se accederá a ellos
+                    validation: { isRequired: true }
+                }),
+                descripcion: fields.text({ label: 'Breve descripción (Opcional)' })
+            },
+        }),
     },
 });

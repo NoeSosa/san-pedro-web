@@ -31,4 +31,16 @@ const noticias = defineCollection({
     })
 });
 
-export const collections = { tradiciones, etiquetas, noticias };
+// Esquema para Documentos de Transparencia
+const documentos = defineCollection({
+    type: 'data', // Usamos 'data' porque son archivos JSON con info del PDF, no artículos largos
+    schema: z.object({
+        titulo: z.string(),
+        fecha: z.string().or(z.date()).transform((val) => new Date(val)),
+        categoria: z.string(),
+        archivo: z.string(), // Esto guardará la ruta "/documentos/mi-archivo.pdf"
+        descripcion: z.string().optional(),
+    })
+});
+
+export const collections = { tradiciones, etiquetas, noticias, documentos };

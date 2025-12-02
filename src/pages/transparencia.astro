@@ -1,0 +1,169 @@
+---
+// src/pages/transparencia.astro
+import Layout from "../layouts/Layout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+// 1. Obtener todos los documentos
+const docs = await getCollection("documentos");
+
+// 2. Ordenarlos por fecha (del más reciente al más antiguo)
+const docsOrdenados = docs.sort(
+    (a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf(),
+);
+
+// 3. Agruparlos por Categoría para mostrarlos ordenados
+// Creamos un "Diccionario" de categorías
+const categorias: Record<string, string> = {
+    actas: "Actas de Cabildo",
+    finanzas: "Finanzas Públicas",
+    obras: "Obras e Infraestructura",
+    normatividad: "Marco Legal y Reglamentos",
+    otros: "Otros Documentos",
+};
+
+// Función para agrupar
+const docsPorCategoria = docsOrdenados.reduce(
+    (acc: Record<string, CollectionEntry<"documentos">[]>, doc) => {
+        const cat = doc.data.categoria;
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(doc);
+        return acc;
+    },
+    {},
+);
+
+// Función para formatear fecha
+const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("es-MX", { dateStyle: "long" }).format(date);
+};
+---
+
+<Layout title="Transparencia | San Pedro Huamelula">
+    <div class="bg-gob-primary text-white py-16 text-center">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl font-bold mb-4">Portal de Transparencia</h1>
+            <p class="text-lg text-gob-accent max-w-2xl mx-auto">
+                Acceso público a la información gubernamental. Rendición de
+                cuentas clara y accesible para todos.
+            </p>
+        </div>
+    </div>
+
+    <section class="py-16 bg-gray-50 min-h-screen">
+        <div class="container mx-auto px-6 max-w-5xl">
+            {
+                docs.length === 0 ? (
+                    <div class="text-center py-20 bg-white rounded-xl shadow p-8">
+                        <p class="text-gray-500 text-xl">
+                            Aún no se han subido documentos a la plataforma.
+                        </p>
+                    </div>
+                ) : (
+                    <div class="space-y-12">
+                        {Object.entries(categorias).map(([key, label]) => {
+                            // Solo mostramos la categoría si tiene documentos dentro
+                            const documentosDeEstaCategoria =
+                                docsPorCategoria[key];
+
+                            if (!documentosDeEstaCategoria) return null;
+
+                            return (
+                                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+                                    <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+                                        <div class="p-2 bg-gob-primary text-white rounded-lg">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-6 w-6"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <h2 class="text-xl font-bold text-gray-800">
+                                            {label}
+                                        </h2>
+                                    </div>
+
+                                    <div class="divide-y divide-gray-100">
+                                        {documentosDeEstaCategoria.map(
+                                            (doc) => (
+                                                <div class="p-6 hover:bg-blue-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                                    <div>
+                                                        <h3 class="font-bold text-gob-primary text-lg mb-1">
+                                                            {doc.data.titulo}
+                                                        </h3>
+                                                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                                                            <span class="flex items-center gap-1">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    class="h-4 w-4"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                >
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                    />
+                                                                </svg>
+                                                                {formatDate(
+                                                                    doc.data
+                                                                        .fecha,
+                                                                )}
+                                                            </span>
+                                                            {doc.data
+                                                                .descripcion && (
+                                                                <span class="hidden sm:inline-block">
+                                                                    •{" "}
+                                                                    {
+                                                                        doc.data
+                                                                            .descripcion
+                                                                    }
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <a
+                                                        href={doc.data.archivo}
+                                                        download
+                                                        class="flex items-center justify-center gap-2 bg-gob-primary text-white px-5 py-2.5 rounded-lg font-bold hover:bg-gob-accent hover:text-gob-primary transition shadow-sm whitespace-nowrap"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-5 w-5"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                            />
+                                                        </svg>
+                                                        Descargar PDF
+                                                    </a>
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )
+            }
+        </div>
+    </section>
+</Layout>
