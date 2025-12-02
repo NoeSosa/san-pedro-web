@@ -36,7 +36,7 @@ Si deseas clonar y editar este proyecto en tu computadora:
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone [https://github.com/TU_USUARIO/nombre-del-repo.git](https://github.com/TU_USUARIO/nombre-del-repo.git)
+    git clone [https://github.com/NoeSosa/san-pedro-web.git)
     cd nombre-del-repo
     ```
 
