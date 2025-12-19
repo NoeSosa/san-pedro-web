@@ -6,6 +6,8 @@ import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 import markdoc from '@astrojs/markdoc';
 
+import node from '@astrojs/node';
+
 // 1. BORRA la línea que importaba "@astrojs/tailwind" (Línea 10 en tu foto)
 
 export default defineConfig({
@@ -20,5 +22,9 @@ export default defineConfig({
     markdoc()
   ],
 
-  output: 'static'
+  output: 'static',
+
+  adapter: node({
+    mode: 'standalone'
+  })
 });

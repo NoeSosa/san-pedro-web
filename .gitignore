@@ -22,3 +22,10 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+config.yml
+cloudflared.deb
+*.sh
+config.yml
+cloudflared.deb
+*.sh
+*.cjs
