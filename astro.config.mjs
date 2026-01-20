@@ -6,9 +6,7 @@ import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 import markdoc from '@astrojs/markdoc';
 
-import node from '@astrojs/node';
-
-// 1. BORRA la línea que importaba "@astrojs/tailwind" (Línea 10 en tu foto)
+// Nota: Se removió @astrojs/node porque output: 'static' no requiere adapter
 
 export default defineConfig({
   vite: {
@@ -16,15 +14,10 @@ export default defineConfig({
   },
 
   integrations: [
-    // 2. BORRA la línea "tailwind()," de aquí abajo
     react(),
     keystatic(),
     markdoc()
   ],
 
-  output: 'static',
-
-  adapter: node({
-    mode: 'standalone'
-  })
+  output: 'static'
 });

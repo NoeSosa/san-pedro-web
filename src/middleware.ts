@@ -14,12 +14,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
             console.log("INTENTO DE ACCESO DETECTADO:");
             console.log(`Usuario recibido: '${user}'`);
             console.log(`Contraseña recibida: '${pwd}'`);
-            console.log(`Usuario esperado (.env): '${import.meta.env.ADMIN_USER}'`);
-            console.log(`Contraseña esperada (.env): '${import.meta.env.ADMIN_PASSWORD}'`);
+            console.log(`Usuario esperado (.env): '${process.env.ADMIN_USER}'`);
+            console.log(`Contraseña esperada (.env): '${process.env.ADMIN_PASSWORD}'`);
             console.log("------------------------------------------------");
             // ----------------------------------------------------
 
-            if (user === import.meta.env.ADMIN_USER && pwd === import.meta.env.ADMIN_PASSWORD) {
+            if (user === process.env.ADMIN_USER && pwd === process.env.ADMIN_PASSWORD) {
                 return next();
             }
         }
