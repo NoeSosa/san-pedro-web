@@ -6,7 +6,8 @@ import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 import markdoc from '@astrojs/markdoc';
 
-// Nota: Se removió @astrojs/node porque output: 'static' no requiere adapter
+import node from '@astrojs/node';
+
 
 export default defineConfig({
   vite: {
@@ -19,5 +20,9 @@ export default defineConfig({
     markdoc()
   ],
 
-  output: 'static'
+  output: 'static',
+
+  adapter: node({
+    mode: 'standalone'
+  })
 });
