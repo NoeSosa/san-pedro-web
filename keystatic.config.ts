@@ -1,8 +1,20 @@
 // keystatic.config.ts
 import { config, fields, collection } from '@keystatic/core';
 
+const isGithubMode = import.meta.env.PUBLIC_KEYSTATIC_MODE === 'github';
+
 export default config({
-    storage: { kind: 'local' },
+    storage: isGithubMode
+        ? {
+            kind: 'github',
+            repo: {
+                owner: 'NoeSosa',       // Tu usuario de GitHub
+                name: 'san-pedro-web',  // Tu repositorio
+            },
+        }
+        : {
+            kind: 'local',
+        },
     collections: {
         // 1. COLECCIÓN DE TRADICIONES
         tradiciones: collection({
