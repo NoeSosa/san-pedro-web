@@ -2,6 +2,15 @@ import { defineMiddleware } from "astro:middleware";
 
 export const onRequest = defineMiddleware(async (context, next) => {
 
+    // --- ZONA DE ESPIONAJE (Diagnóstico) ---
+    if (context.url.pathname.startsWith("/api/keystatic")) {
+        console.log("------------------------------------------------");
+        console.log("🕵️ EL SERVIDOR VE ESTA URL:", context.url.href);
+        console.log("🌍 LA VARIABLE ORIGIN ES:", process.env.ORIGIN);
+        console.log("------------------------------------------------");
+    }
+    // ---------------------------------------
+
     // 1. Identificamos si es el panel visual
     const isDashboard = context.url.pathname.startsWith("/keystatic");
 
