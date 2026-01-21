@@ -4,7 +4,7 @@ import { config, fields, collection } from '@keystatic/core';
 export default config({
     storage: { kind: 'local' },
     collections: {
-        // 1. COLECCIÓN DE TRADICIONES (Ya la tienes)
+        // 1. COLECCIÓN DE TRADICIONES
         tradiciones: collection({
             label: 'Tradiciones',
             slugField: 'title',
@@ -27,7 +27,7 @@ export default config({
             },
         }),
 
-        // 2. NUEVA: COLECCIÓN DE ETIQUETAS (Categorías)
+        // 2. COLECCIÓN DE ETIQUETAS (Categorías)
         etiquetas: collection({
             label: 'Etiquetas de Noticias',
             slugField: 'name',
@@ -35,8 +35,8 @@ export default config({
             schema: {
                 name: fields.slug({ name: { label: 'Nombre de la Etiqueta' } }),
                 color: fields.select({
-                    label: 'Color del Badge',
-                    description: 'Elige un color para diferenciar esta categoría',
+                    label: 'Color de la Etiqueta',
+                    description: 'Elige un color para diferenciar esta categoría visualmente.',
                     options: [
                         { label: 'Azul (Obras/Gobierno)', value: 'bg-blue-100 text-blue-800' },
                         { label: 'Verde (Ecología)', value: 'bg-green-100 text-green-800' },
@@ -49,7 +49,7 @@ export default config({
             },
         }),
 
-        // 3. NUEVA: COLECCIÓN DE NOTICIAS
+        // 3. COLECCIÓN DE NOTICIAS
         noticias: collection({
             label: 'Noticias',
             slugField: 'title',
@@ -58,21 +58,25 @@ export default config({
             schema: {
                 title: fields.slug({ name: { label: 'Título de la Noticia' } }),
                 date: fields.date({ label: 'Fecha de Publicación', validation: { isRequired: true } }),
-                // Aquí está la magia: Relacionamos con las etiquetas
+                // Relación con etiquetas
                 tags: fields.relationship({
-                    label: 'Etiqueta / Categoría',
+                    label: 'Categoría / Etiqueta',
                     collection: 'etiquetas',
                 }),
                 isFeatured: fields.checkbox({
-                    label: '¿Destacar en el Grid Principal?',
-                    description: 'Si marcas esto, aparecerá en el mosaico grande de arriba.'
+                    label: '¿Destacar en Portada?',
+                    description: 'Si se activa, esta noticia aparecerá en la sección principal de inicio.'
                 }),
                 image: fields.image({
                     label: 'Imagen Destacada',
                     directory: 'public/images/noticias',
                     publicPath: '/images/noticias/',
                 }),
-                excerpt: fields.text({ label: 'Resumen (aparece en la tarjeta)', multiline: true }),
+                excerpt: fields.text({
+                    label: 'Resumen',
+                    description: 'Texto breve que aparecerá en la tarjeta de la noticia.',
+                    multiline: true
+                }),
                 content: fields.document({
                     label: 'Cuerpo de la Noticia',
                     formatting: true,
@@ -83,14 +87,14 @@ export default config({
             },
         }),
 
-        // 4. NUEVA: COLECCIÓN DE DOCUMENTOS DE TRANSPARENCIA
+        // 4. COLECCIÓN DE DOCUMENTOS DE TRANSPARENCIA
         documentos: collection({
-            label: 'Transparencia (PDFs)',
+            label: 'Transparencia (Documentos)',
             slugField: 'titulo',
             path: 'src/content/documentos/*',
             schema: {
                 titulo: fields.slug({ name: { label: 'Nombre del Documento' } }),
-                fecha: fields.date({ label: 'Fecha de publicación', validation: { isRequired: true } }),
+                fecha: fields.date({ label: 'Fecha de Publicación', validation: { isRequired: true } }),
                 categoria: fields.select({
                     label: 'Categoría',
                     options: [
@@ -103,12 +107,12 @@ export default config({
                     defaultValue: 'actas'
                 }),
                 archivo: fields.file({
-                    label: 'Subir Archivo (PDF)',
-                    directory: 'public/documentos', // Se guardarán en la carpeta pública
-                    publicPath: '/documentos/',     // Así se accederá a ellos
+                    label: 'Archivo Digital (PDF)',
+                    directory: 'public/documentos',
+                    publicPath: '/documentos/',
                     validation: { isRequired: true }
                 }),
-                descripcion: fields.text({ label: 'Breve descripción (Opcional)' })
+                descripcion: fields.text({ label: 'Descripción Adicional (Opcional)' })
             },
         }),
     },
