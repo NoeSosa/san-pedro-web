@@ -1,23 +1,24 @@
 import { defineMiddleware } from "astro:middleware";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-    if (context.url.pathname.startsWith("/keystatic") || context.url.pathname.startsWith("/api/keystatic")) {
+
+    // 1. Identificamos si es el panel visual
+    const isDashboard = context.url.pathname.startsWith("/keystatic");
+
+    // 2. Identificamos si es la API interna (donde entra GitHub)
+    // ESTO ES LO QUE TE FALTABA EXCLUIR
+    const isApi = context.url.pathname.startsWith("/api/keystatic");
+
+    // LÓGICA CORREGIDA:
+    // Solo pedimos contraseña si es el Dashboard Y NO es la API.
+    // Dejamos la puerta abierta (/api) para que GitHub complete el login.
+    if (isDashboard && !isApi) {
 
         const basicAuth = context.request.headers.get("authorization");
 
         if (basicAuth) {
             const authValue = basicAuth.split(" ")[1];
             const [user, pwd] = atob(authValue).split(":");
-
-            // --- ZONA DE DEBUGGING (Bórralo cuando funcione) ---
-            console.log("------------------------------------------------");
-            console.log("INTENTO DE ACCESO DETECTADO:");
-            console.log(`Usuario recibido: '${user}'`);
-            console.log(`Contraseña recibida: '${pwd}'`);
-            console.log(`Usuario esperado (.env): '${process.env.ADMIN_USER}'`);
-            console.log(`Contraseña esperada (.env): '${process.env.ADMIN_PASSWORD}'`);
-            console.log("------------------------------------------------");
-            // ----------------------------------------------------
 
             if (user === process.env.ADMIN_USER && pwd === process.env.ADMIN_PASSWORD) {
                 return next();
