@@ -10,6 +10,9 @@ import node from '@astrojs/node';
 
 
 export default defineConfig({
+
+  site: 'https://sanpedrohuamelula.pro',
+
   vite: {
     plugins: [tailwindcss()] // Esto es lo que hace que Tailwind funcione ahora
   },
