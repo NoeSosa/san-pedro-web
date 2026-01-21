@@ -5,8 +5,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // --- ZONA DE ESPIONAJE (Diagnóstico) ---
     if (context.url.pathname.startsWith("/api/keystatic")) {
         console.log("------------------------------------------------");
-        console.log("🕵️ EL SERVIDOR VE ESTA URL:", context.url.href);
-        console.log("🌍 LA VARIABLE ORIGIN ES:", process.env.ORIGIN);
+        console.log("📍 URL:", context.url.href);
+        // ESTO ES LO NUEVO: ¿Trae cookies el navegador?
+        const cookies = context.request.headers.get("cookie");
+        if (cookies) {
+            console.log("🍪 COOKIES RECIBIDAS:", cookies);
+        } else {
+            console.log("❌ ALERTA: El navegador NO envió ninguna cookie (Sesión perdida)");
+        }
         console.log("------------------------------------------------");
     }
     // ---------------------------------------
