@@ -48,5 +48,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
         });
     }
 
-    return next();
+    // ============================================================
+    // AQUÍ ESTÁ EL CAMBIO IMPORTANTE (AL FINAL)
+    // ============================================================
+
+    // 1. Ejecutamos la petición original y guardamos la respuesta en una variable
+    const response = await next();
+
+    // 2. --- ZONA DE PRUEBA (SOLO PARA DIAGNÓSTICO) ---
+    // Interceptamos la respuesta justo antes de que salga al navegador
+    if (context.url.pathname.startsWith("/api/keystatic/github/login")) {
+        response.headers.append(
+            "Set-Cookie",
+            "TEST_COOKIE=funciona; Path=/; HttpOnly; SameSite=Lax; Secure"
+        );
+        console.log("✅ HE INYECTADO LA COOKIE DE PRUEBA MANUALMENTE");
+    }
+    // ----------------------------------------------
+
+    // 3. Devolvemos la respuesta (posiblemente modificada)
+    return response;
 });
