@@ -23,7 +23,7 @@ export default defineConfig({
     markdoc()
   ],
 
-  output: 'static',
+  output: 'server',
 
   adapter: node({
     mode: 'standalone'
