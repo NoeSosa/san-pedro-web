@@ -1,3 +1,7 @@
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
+
+// --- Core Strapi Types ---
+
 export interface StrapiMeta {
     pagination: {
         page: number;
@@ -63,7 +67,7 @@ export interface StrapiMediaArray {
     data: StrapiData<StrapiImageAttributes>[];
 }
 
-// --- Modelos Específicos ---
+// --- Domain Models ---
 
 export interface EtiquetaAttributes {
     nombre: string;
@@ -76,8 +80,8 @@ export interface EtiquetaAttributes {
 export interface NoticiaAttributes {
     titulo: string;
     slug: string;
-    fecha: string;
-    contenido: any[]; // Blocks JSON
+    fecha: string; // ISO Date string
+    contenido: BlocksContent; // Rich Text Blocks
     destacado: boolean;
     imagen_destacada: StrapiMedia;
     etiquetas: {
@@ -92,7 +96,7 @@ export interface TradicionAttributes {
     titulo: string;
     slug: string;
     descripcion: string;
-    contenido: any[]; // Blocks JSON
+    contenido: BlocksContent;
     imagen_principal: StrapiMedia;
     createdAt: string;
     updatedAt: string;

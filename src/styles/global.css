@@ -2,13 +2,52 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-    /* Colores institucionales */
+    /* Paleta Institucional */
     --color-gob-primary: #1a3c5e;
-    /* Azul */
+    /* Azul Institucional */
     --color-gob-accent: #d4a017;
     /* Dorado */
     --color-gob-light: #f4f4f4;
+    /* Gris Claro */
 
-    /* Fuentes (Opcional, usa la del sistema por defecto) */
-    --font-sans: "Segoe UI", system-ui, sans-serif;
+    /* Tipografía */
+    --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+
+    /* Animaciones Personalizadas */
+    --animate-fade-in: fade-in 0.5s ease-out;
+    --animate-slide-up: slide-up 0.5s ease-out;
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slide-up {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+/* Utilidades Globales */
+@layer base {
+    body {
+        @apply bg-gray-50 text-gray-900 antialiased;
+    }
+}
+
+/* Ajustes de Swiper (si se usa) */
+:root {
+    --swiper-theme-color: var(--color-gob-primary);
 }

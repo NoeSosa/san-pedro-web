@@ -1,0 +1,109 @@
+---
+import { getStrapiMedia } from "../../lib/strapi";
+import type { StrapiData, NoticiaAttributes } from "../../interfaces/strapi";
+
+interface Props {
+    noticia: StrapiData<NoticiaAttributes>;
+}
+
+const { noticia } = Astro.props;
+const { titulo, slug, fecha, imagen_destacada, etiquetas } = noticia.attributes;
+
+// Optimización de imagen: Preferir 'small' para tarjetas, fallback a original
+const imageUrl = getStrapiMedia(
+    imagen_destacada.data?.attributes?.formats?.small?.url ||
+        imagen_destacada.data?.attributes?.url,
+);
+
+const fechaFormateada = new Date(fecha).toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+});
+---
+
+<a
+    href={`/noticias/${slug}`}
+    class="group flex flex-col bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 h-full border border-gray-100 dark:border-gray-700"
+>
+    {/* Contenedor de Imagen */}
+    <div
+        class="relative aspect-[16/9] overflow-hidden bg-gray-100 dark:bg-gray-700"
+    >
+        {
+            imageUrl ? (
+                <img
+                    src={imageUrl}
+                    alt={titulo}
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
+                />
+            ) : (
+                <div class="flex items-center justify-center h-full text-gray-400">
+                    <svg
+                        class="w-12 h-12"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                    </svg>
+                </div>
+            )
+        }
+
+        {/* Etiquetas (Badges) */}
+        <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-10">
+            {
+                etiquetas.data
+                    .slice(0, 2)
+                    .map((tag) => (
+                        <span
+                            class={`text-[10px] font-bold px-2 py-1 rounded-md shadow-sm backdrop-blur-md uppercase tracking-wide ${tag.attributes.color || "bg-white/90 text-gray-800"}`}
+                        >
+                            {tag.attributes.nombre}
+                        </span>
+                    ))
+            }
+        </div>
+    </div>
+
+    {/* Contenido de la Tarjeta */}
+    <div class="flex flex-col flex-grow p-5">
+        <time
+            datetime={fecha}
+            class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-2"
+        >
+            {fechaFormateada}
+        </time>
+
+        <h3
+            class="text-xl font-bold text-gray-900 dark:text-white mb-3 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+        >
+            {titulo}
+        </h3>
+
+        <div
+            class="mt-auto pt-4 flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0"
+        >
+            Leer más
+            <svg
+                class="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                ><path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
+            >
+        </div>
+    </div>
+</a>

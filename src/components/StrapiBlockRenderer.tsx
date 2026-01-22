@@ -6,26 +6,33 @@ interface StrapiBlockRendererProps {
 }
 
 /**
- * Componente para renderizar contenido rico (Blocks) de Strapi v5.
- * Requiere instalar: npm install @strapi/blocks-react-renderer
- * 
- * Utiliza la clase 'prose' de Tailwind Typography para el estilizado automático.
+ * Renders Strapi v5 "Blocks" (Rich Text) using Tailwind Typography.
+ * This component is an "Island" candidate if interactivity is needed, 
+ * but usually renders static HTML.
  */
 export default function StrapiBlockRenderer({ content }: StrapiBlockRendererProps) {
     if (!content) return null;
 
     return (
-        <div className="prose prose-lg max-w-none dark:prose-invert">
+        <div className="prose prose-lg max-w-none dark:prose-invert 
+      prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
+      prose-a:text-blue-600 dark:prose-a:text-blue-400 hover:prose-a:text-blue-500
+      prose-img:rounded-xl prose-img:shadow-lg">
             <BlocksRenderer
                 content={content}
                 blocks={{
-                    // Puedes personalizar bloques específicos aquí si es necesario
                     image: ({ image }) => (
                         <img
                             src={image.url}
                             alt={image.alternativeText || ''}
-                            className="rounded-lg shadow-md w-full h-auto object-cover my-6"
+                            className="w-full h-auto object-cover my-8"
+                            loading="lazy"
                         />
+                    ),
+                    link: ({ children, url }) => (
+                        <a href={url} className="underline decoration-2 underline-offset-2 transition-colors">
+                            {children}
+                        </a>
                     ),
                 }}
             />

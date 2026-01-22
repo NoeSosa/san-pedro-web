@@ -1,257 +1,384 @@
 ---
-import Card from "../components/Card.astro";
 import Layout from "../layouts/Layout.astro";
-import TraditionCarousel from "../components/TraditionCarousel.jsx"; // Importar carrusel
-import { getCollection } from "astro:content"; // Importar función para leer datos
-// 1. OBTENER DATOS
-const allNoticias = await getCollection("noticias");
+import TraditionCarousel from "../components/TraditionCarousel"; // .tsx now
+import NoticiaCard from "../components/ui/NoticiaCard.astro";
+import { fetchApi, getStrapiMedia } from "../lib/strapi";
+import type {
+	StrapiResponse,
+	NoticiaAttributes,
+	TradicionAttributes,
+	StrapiData,
+} from "../interfaces/strapi";
 
-// 2. ORDENAR POR FECHA (Más recientes primero)
-const noticiasOrdenadas = allNoticias.sort(
-	(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
+// 1. OBTENER DATOS DE STRAPI
+let noticias: StrapiData<NoticiaAttributes>[] = [];
+let tradiciones: StrapiData<TradicionAttributes>[] = [];
 
-// 3. OBTENER ETIQUETAS (Para pintar los colores)
-const allTags = await getCollection("etiquetas");
-const tagMap = new Map(allTags.map((tag) => [tag.id, tag.data]));
+try {
+	// Fetch Noticias
+	const noticiasRes = await fetchApi<
+		StrapiResponse<StrapiData<NoticiaAttributes>[]>
+	>({
+		endpoint: "noticias",
+		query: {
+			sort: ["fecha:desc"],
+			populate: {
+				imagen_destacada: "*",
+				etiquetas: "*",
+			},
+			pagination: {
+				limit: 15, // Traemos suficientes para destacar y listar
+			},
+		},
+	});
+	noticias = noticiasRes.data;
 
-// 4. SEPARAR DESTACADAS VS NORMALES
-const destacadas = noticiasOrdenadas
-	.filter((n) => n.data.isFeatured)
-	.slice(0, 5); // Máximo 5 destacadas
-const ultimasNoticias = noticiasOrdenadas
-	.filter((n) => !n.data.isFeatured)
-	.slice(0, 6); // 6 normales
+	// Fetch Tradiciones
+	const tradicionesRes = await fetchApi<
+		StrapiResponse<StrapiData<TradicionAttributes>[]>
+	>({
+		endpoint: "tradiciones",
+		query: {
+			populate: {
+				imagen_principal: "*",
+			},
+		},
+	});
+	tradiciones = tradicionesRes.data;
+} catch (error) {
+	console.error("Error fetching home data:", error);
+}
+
+// 2. SEPARAR DESTACADAS VS NORMALES
+const destacadas = noticias.filter((n) => n.attributes.destacado).slice(0, 5);
+const ultimasNoticias = noticias
+	.filter((n) => !n.attributes.destacado)
+	.slice(0, 6);
+
+// Si no hay destacadas, usar las primeras como fallback
+if (destacadas.length === 0 && noticias.length > 0) {
+	destacadas.push(noticias[0]);
+	ultimasNoticias.shift();
+}
 
 // Función auxiliar para formatear fecha
-const formatDate = (date: Date) => {
+const formatDate = (dateString: string) => {
 	return new Intl.DateTimeFormat("es-MX", {
 		day: "numeric",
 		month: "long",
 		year: "numeric",
-	}).format(date);
+	}).format(new Date(dateString));
 };
-
-// Leer las tradiciones que creaste en el panel /keystatic
-const tradiciones = await getCollection("tradiciones");
 ---
 
 <Layout title="San Pedro Huamelula | Tradición y Progreso">
 	<section
 		id="inicio"
-		class="relative h-[85vh] flex items-center justify-center bg-gray-800 overflow-hidden"
+		class="relative h-[85vh] flex items-center justify-center bg-gray-900 overflow-hidden"
 	>
 		<div class="absolute inset-0 z-0">
 			<img
-				src="San_Pedro_Huamelula.jpg"
-				alt="Fondo"
-				class="w-full h-full object-cover opacity-50"
+				src="/San_Pedro_Huamelula.jpg"
+				alt="San Pedro Huamelula"
+				class="w-full h-full object-cover opacity-40"
 			/>
+			<div
+				class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/90"
+			>
+			</div>
 		</div>
 
 		<div
-			class="relative z-10 text-center px-4 max-w-4xl mx-auto text-white"
+			class="relative z-10 text-center px-4 max-w-5xl mx-auto text-white"
 		>
 			<h1
-				class="text-4xl md:text-6xl font-bold mb-6 leading-tight drop-shadow-lg"
+				class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight drop-shadow-2xl"
 			>
-				Bienvenidos a la <span class="text-gob-accent"
+				Bienvenidos a la <span
+					class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500"
 					>Tierra Chontal</span
 				>
 			</h1>
-			<p class="text-lg md:text-xl mb-8 text-gray-100 drop-shadow-md">
-				Donde la tradición se une con el futuro. Gobierno cercano para
-				San Pedro Huamelula.
+			<p
+				class="text-xl md:text-2xl mb-10 text-gray-200 font-light max-w-2xl mx-auto"
+			>
+				Donde la tradición milenaria se une con el futuro. <br
+					class="hidden md:block"
+				/>Gobierno cercano para San Pedro Huamelula.
 			</p>
 			<a
 				href="#gobierno"
-				class="bg-gob-accent text-gob-primary font-bold py-3 px-8 rounded-full text-lg hover:bg-yellow-500 hover:scale-105 transition transform inline-block shadow-lg cursor-pointer"
+				class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-blue-900 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 hover:bg-blue-800"
 			>
 				Conoce a tu Ayuntamiento
+				<svg
+					class="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					><path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg
+				>
 			</a>
 		</div>
 	</section>
 
-	<section id="tradicion" class="py-20 container mx-auto px-6">
-		<div class="text-center mb-8">
-			<h2 class="text-3xl md:text-4xl font-bold text-gob-primary mb-4">
+	<section id="tradicion" class="py-24 container mx-auto px-6">
+		<div class="text-center mb-16">
+			<span
+				class="text-blue-600 font-bold tracking-wider uppercase text-sm"
+				>Cultura Viva</span
+			>
+			<h2 class="text-4xl md:text-5xl font-bold text-gray-900 mt-2 mb-4">
 				Nuestra Identidad
 			</h2>
-			<div class="w-20 h-1 bg-gob-accent mx-auto"></div>
+			<div class="w-24 h-1.5 bg-yellow-500 mx-auto rounded-full"></div>
 		</div>
 
 		{
 			tradiciones.length > 0 ? (
-				<TraditionCarousel client:load tradiciones={tradiciones} />
+				<TraditionCarousel client:visible tradiciones={tradiciones} />
 			) : (
-				<p class="text-center text-gray-500">
-					No hay tradiciones cargadas en el panel aún.
-				</p>
+				<div class="text-center p-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+					<p class="text-gray-500 text-lg">Cargando tradiciones...</p>
+				</div>
 			)
 		}
 	</section>
 
-	<section class="py-12 bg-gray-50">
+	<section class="py-20 bg-gray-50 border-y border-gray-200">
 		<div class="container mx-auto px-4">
-			<div class="text-center mb-8">
-				<h2 class="text-3xl font-bold text-gray-800">
+			<div class="text-center mb-12">
+				<h2 class="text-3xl font-bold text-gray-900">
 					Bienestar Social (DIF)
 				</h2>
-				<p class="text-gray-600 mt-2">
+				<p class="text-gray-600 mt-3 text-lg">
 					Atención especializada para nuestros grupos vulnerables
 				</p>
 			</div>
 
-			<div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+			<div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
 				<a
 					href="/dif"
-					class="group block bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 transform hover:-translate-y-1"
+					class="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
 				>
-					<div class="h-2 bg-orange-500"></div>
-					<div class="p-6">
-						<div class="flex items-center gap-4 mb-3">
-							<span class="text-4xl">👵</span>
+					<div class="absolute top-0 left-0 w-2 h-full bg-orange-500">
+					</div>
+					<div class="p-8 pl-10">
+						<div class="flex items-center gap-4 mb-4">
+							<div class="p-3 bg-orange-100 rounded-lg text-2xl">
+								👵
+							</div>
 							<h3
-								class="text-2xl font-bold text-gray-800 group-hover:text-orange-600 transition-colors"
+								class="text-2xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors"
 							>
 								Casa de Día
 							</h3>
 						</div>
-						<p class="text-gray-600 mb-4">
+						<p class="text-gray-600 mb-6 text-lg">
 							Atención integral, psicología y actividades
 							recreativas para adultos mayores.
 						</p>
 						<span
-							class="inline-block text-orange-600 font-semibold group-hover:underline"
-							>Ver horarios y servicios &rarr;</span
+							class="inline-flex items-center text-orange-600 font-bold group-hover:translate-x-2 transition-transform"
 						>
+							Ver horarios y servicios <svg
+								class="w-4 h-4 ml-2"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								><path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
+							>
+						</span>
 					</div>
 				</a>
 
 				<a
 					href="/dif"
-					class="group block bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 transform hover:-translate-y-1"
+					class="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100"
 				>
-					<div class="h-2 bg-teal-600"></div>
-					<div class="p-6">
-						<div class="flex items-center gap-4 mb-3">
-							<span class="text-4xl">♿</span>
+					<div class="absolute top-0 left-0 w-2 h-full bg-teal-600">
+					</div>
+					<div class="p-8 pl-10">
+						<div class="flex items-center gap-4 mb-4">
+							<div class="p-3 bg-teal-100 rounded-lg text-2xl">
+								♿
+							</div>
 							<h3
-								class="text-2xl font-bold text-gray-800 group-hover:text-teal-600 transition-colors"
+								class="text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors"
 							>
 								UBR y Rehabilitación
 							</h3>
 						</div>
-						<p class="text-gray-600 mb-4">
+						<p class="text-gray-600 mb-6 text-lg">
 							Fisioterapia, psicología y enfermería para
-							rehabilitación física.
+							rehabilitación física especializada.
 						</p>
 						<span
-							class="inline-block text-teal-600 font-semibold group-hover:underline"
-							>Conocer especialistas &rarr;</span
+							class="inline-flex items-center text-teal-600 font-bold group-hover:translate-x-2 transition-transform"
 						>
+							Conocer especialistas <svg
+								class="w-4 h-4 ml-2"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								><path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
+							>
+						</span>
 					</div>
 				</a>
 			</div>
 		</div>
 	</section>
-	<section id="noticias" class="py-20 bg-gray-50">
+
+	<section id="noticias" class="py-24 bg-white">
 		<div class="container mx-auto px-6">
-			<div class="flex justify-between items-end mb-10">
+			<div
+				class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4"
+			>
 				<div>
-					<h2
-						class="text-3xl md:text-4xl font-bold text-gob-primary mb-2"
+					<span
+						class="text-blue-600 font-bold tracking-wider uppercase text-sm"
+						>Transparencia y Avance</span
 					>
+					<h2 class="text-4xl font-bold text-gray-900 mt-2">
 						Acciones de Gobierno
 					</h2>
-					<div class="w-20 h-1 bg-gob-accent"></div>
 				</div>
 				<a
 					href="/noticias"
-					class="hidden md:inline-block text-gob-primary font-bold hover:text-gob-accent transition"
+					class="hidden md:inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
 				>
-					Ver todas las noticias &rarr;
+					Ver todas las noticias
 				</a>
 			</div>
 
 			{
 				destacadas.length > 0 && (
-					<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-16">
-						<article class="relative group overflow-hidden rounded-2xl shadow-xl h-96 lg:h-[500px]">
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+						{/* Noticia Principal (Hero) */}
+						<article class="relative group overflow-hidden rounded-3xl shadow-2xl h-96 lg:h-[600px]">
 							<img
-								src={destacadas[0].data.image}
-								alt={destacadas[0].data.title}
-								class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700"
-							/>
-							<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-							<div class="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-								{destacadas[0].data.tags && (
-									<span
-										class={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-3 ${tagMap.get(destacadas[0].data.tags.id)?.color || "bg-gray-100 text-gray-800"}`}
-									>
-										{
-											tagMap.get(
-												destacadas[0].data.tags.id,
-											)?.name
-										}
-									</span>
+								src={getStrapiMedia(
+									destacadas[0].attributes.imagen_destacada
+										.data?.attributes?.url,
 								)}
-								<h3 class="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
+								alt={destacadas[0].attributes.titulo}
+								class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-1000"
+							/>
+							<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-90" />
+							<div class="absolute bottom-0 left-0 p-8 md:p-12 w-full">
+								<div class="flex flex-wrap gap-2 mb-4">
+									{destacadas[0].attributes.etiquetas.data.map(
+										(tag) => (
+											<span
+												class={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide backdrop-blur-md ${tag.attributes.color || "bg-white/20 text-white"}`}
+											>
+												{tag.attributes.nombre}
+											</span>
+										),
+									)}
+								</div>
+								<h3 class="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
 									<a
-										href={`/noticias/${destacadas[0].slug}`}
-										class="hover:underline"
+										href={`/noticias/${destacadas[0].attributes.slug}`}
+										class="hover:text-blue-200 transition-colors"
 									>
-										{destacadas[0].data.title}
+										{destacadas[0].attributes.titulo}
 									</a>
 								</h3>
-								<p class="text-gray-300 line-clamp-2 mb-4 hidden md:block">
-									{destacadas[0].data.excerpt}
-								</p>
-								<span class="text-gray-400 text-sm">
-									{formatDate(destacadas[0].data.date)}
-								</span>
+								<div class="flex items-center text-gray-300 text-sm font-medium">
+									<svg
+										class="w-5 h-5 mr-2"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+										/>
+									</svg>
+									{formatDate(destacadas[0].attributes.fecha)}
+								</div>
 							</div>
 						</article>
 
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+						{/* Grid de Secundarias */}
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
 							{destacadas.slice(1).map((noticia) => (
-								<article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition group flex flex-col h-full">
-									<div class="h-40 overflow-hidden relative">
+								<article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition group flex flex-col h-full border border-gray-100">
+									<div class="h-48 overflow-hidden relative">
 										<img
-											src={noticia.data.image}
-											class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+											src={getStrapiMedia(
+												noticia.attributes
+													.imagen_destacada.data
+													?.attributes?.formats?.small
+													?.url ||
+													noticia.attributes
+														.imagen_destacada.data
+														?.attributes?.url,
+											)}
+											alt={noticia.attributes.titulo}
+											class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
 										/>
-										{noticia.data.tags && (
-											<span
-												class={`absolute top-3 left-3 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${tagMap.get(noticia.data.tags.id)?.color}`}
-											>
-												{
-													tagMap.get(
-														noticia.data.tags.id,
-													)?.name
-												}
-											</span>
-										)}
+										<div class="absolute top-3 left-3 flex gap-1">
+											{noticia.attributes.etiquetas.data
+												.slice(0, 1)
+												.map((tag) => (
+													<span
+														class={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm ${tag.attributes.color || "bg-white text-gray-800"}`}
+													>
+														{tag.attributes.nombre}
+													</span>
+												))}
+										</div>
 									</div>
-									<div class="p-5 flex flex-col flex-grow">
-										<h4 class="font-bold text-gob-primary mb-2 line-clamp-2 leading-snug">
+									<div class="p-6 flex flex-col flex-grow">
+										<time class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
+											{formatDate(
+												noticia.attributes.fecha,
+											)}
+										</time>
+										<h4 class="font-bold text-xl text-gray-900 mb-3 line-clamp-3 leading-snug group-hover:text-blue-700 transition-colors">
 											<a
-												href={`/noticias/${noticia.slug}`}
+												href={`/noticias/${noticia.attributes.slug}`}
 											>
-												{noticia.data.title}
+												{noticia.attributes.titulo}
 											</a>
 										</h4>
-										<div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
-											<span>
-												{formatDate(noticia.data.date)}
-											</span>
-											<a
-												href={`/noticias/${noticia.slug}`}
-												class="text-gob-accent font-bold hover:underline"
+										<a
+											href={`/noticias/${noticia.attributes.slug}`}
+											class="mt-auto text-blue-600 font-bold text-sm hover:underline inline-flex items-center"
+										>
+											Leer nota completa{" "}
+											<svg
+												class="w-4 h-4 ml-1"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
 											>
-												Leer &rarr;
-											</a>
-										</div>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M17 8l4 4m0 0l-4 4m4-4H3"
+												/>
+											</svg>
+										</a>
 									</div>
 								</article>
 							))}
@@ -260,61 +387,27 @@ const tradiciones = await getCollection("tradiciones");
 				)
 			}
 
-			<div class="mb-8">
-				<h3 class="text-2xl font-bold text-gray-800 mb-6">
-					Últimas Noticias
+			<div class="mb-12">
+				<h3
+					class="text-2xl font-bold text-gray-900 mb-8 border-l-4 border-blue-600 pl-4"
+				>
+					Más Noticias Recientes
 				</h3>
 				<div
 					class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
 				>
 					{
 						ultimasNoticias.map((noticia) => (
-							<article class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:-translate-y-1 hover:shadow-md transition duration-300">
-								<div class="h-48 overflow-hidden relative">
-									<img
-										src={noticia.data.image}
-										class="w-full h-full object-cover"
-									/>
-								</div>
-								<div class="p-6">
-									<div class="flex items-center justify-between mb-3">
-										{noticia.data.tags && (
-											<span
-												class={`px-2 py-1 rounded text-xs font-bold ${tagMap.get(noticia.data.tags.id)?.color}`}
-											>
-												{
-													tagMap.get(
-														noticia.data.tags.id,
-													)?.name
-												}
-											</span>
-										)}
-										<span class="text-xs text-gray-400">
-											{formatDate(noticia.data.date)}
-										</span>
-									</div>
-									<h3 class="text-xl font-bold text-gob-primary mb-3 leading-tight">
-										<a
-											href={`/noticias/${noticia.slug}`}
-											class="hover:text-gob-accent transition"
-										>
-											{noticia.data.title}
-										</a>
-									</h3>
-									<p class="text-gray-600 text-sm line-clamp-3 mb-4">
-										{noticia.data.excerpt}
-									</p>
-								</div>
-							</article>
+							<NoticiaCard noticia={noticia} />
 						))
 					}
 				</div>
 			</div>
 
-			<div class="text-center md:hidden mt-8">
+			<div class="text-center md:hidden mt-12">
 				<a
 					href="/noticias"
-					class="btn-primary inline-block bg-gob-primary text-white py-3 px-8 rounded-full font-bold"
+					class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-blue-900 hover:bg-blue-800 md:text-lg shadow-lg"
 				>
 					Ver todas las noticias
 				</a>

@@ -5,8 +5,8 @@ interface FetchApiProps {
 }
 
 /**
- * Convierte un objeto anidado en una cadena de consulta compatible con Strapi.
- * Ejemplo: { filters: { slug: { $eq: 'abc' } } } -> "filters[slug][$eq]=abc"
+ * Helper to stringify nested objects for Strapi query params.
+ * Handles arrays and deep objects recursively.
  */
 function stringifyQuery(query: Record<string, any>, prefix = ''): string {
     return Object.keys(query)
@@ -20,12 +20,6 @@ function stringifyQuery(query: Record<string, any>, prefix = ''): string {
                 return stringifyQuery(value, newKey);
             } else if (Array.isArray(value)) {
                 return value.map((v, i) => {
-                    // Strapi v5 array handling might vary, but usually repeated keys or indexed keys work.
-                    // For simplicity in filters, often just repeating works or using $in.
-                    // We'll assume standard repeating keys for arrays if needed, or indexed.
-                    // Safe bet for Strapi is usually `key[0]=val&key[1]=val` for some things,
-                    // but strictly standard URLSearchParams repeats keys.
-                    // Let's stick to a simple recursive object expansion which covers 99% of Strapi queries.
                     return `${newKey}[${i}]=${encodeURIComponent(v)}`;
                 }).join('&');
             } else {
@@ -36,20 +30,23 @@ function stringifyQuery(query: Record<string, any>, prefix = ''): string {
         .join('&');
 }
 
+/**
+ * Core fetch wrapper for Strapi v5 API.
+ * Uses native fetch and handles errors gracefully.
+ */
 export async function fetchApi<T>({
     endpoint,
     query,
     token,
 }: FetchApiProps): Promise<T> {
-    const baseUrl = import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    const baseUrl = (import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '');
     const apiToken = token || import.meta.env.STRAPI_API_TOKEN;
 
-    if (endpoint.startsWith('/')) {
-        endpoint = endpoint.slice(1);
-    }
+    // Normalize endpoint
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
 
     const queryString = query ? stringifyQuery(query) : '';
-    const url = `${baseUrl}/api/${endpoint}${queryString ? `?${queryString}` : ''}`;
+    const url = `${baseUrl}/api/${cleanEndpoint}${queryString ? `?${queryString}` : ''}`;
 
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -63,7 +60,6 @@ export async function fetchApi<T>({
         const res = await fetch(url, { headers });
 
         if (!res.ok) {
-            // Intenta obtener detalles del error de Strapi
             let errorMessage = `Error fetching ${url}: ${res.statusText} (${res.status})`;
             try {
                 const errorData = await res.json();
@@ -71,7 +67,7 @@ export async function fetchApi<T>({
                     errorMessage = `Strapi Error: ${errorData.error.message}`;
                 }
             } catch {
-                // Ignorar si no es JSON
+                // Ignore non-JSON errors
             }
             throw new Error(errorMessage);
         }
@@ -79,29 +75,25 @@ export async function fetchApi<T>({
         const data = await res.json();
         return data as T;
     } catch (error) {
-        console.error('❌ API Fetch Error:', error);
+        console.error(`❌ API Fetch Error [${endpoint}]:`, error);
         throw error;
     }
 }
 
 /**
- * Obtiene la URL absoluta de un recurso multimedia de Strapi.
- * Maneja casos nulos o indefinidos.
+ * Resolves the absolute URL for a Strapi media asset.
+ * Supports local uploads and external providers (S3, Cloudinary).
  */
 export function getStrapiMedia(url: string | null | undefined): string | null {
     if (!url) return null;
 
-    // Si ya es una URL absoluta (ej: Cloudinary, AWS S3), devolverla tal cual
+    // Check if it's already an absolute URL
     if (url.startsWith('http') || url.startsWith('//')) {
         return url;
     }
 
-    // Si es relativa, concatenar con la URL base de Strapi
-    const baseUrl = import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
-
-    // Asegurar que no haya doble slash
-    const cleanBase = baseUrl.replace(/\/$/, '');
+    const baseUrl = (import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '');
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
 
-    return `${cleanBase}${cleanUrl}`;
+    return `${baseUrl}${cleanUrl}`;
 }

@@ -1,56 +1,93 @@
 ---
-// src/pages/tradiciones/[slug].astro
-import { getCollection } from "astro:content";
-import type { CollectionEntry } from "astro:content"; // <--- IMPORTANTE: Importamos el tipo
 import Layout from "../../layouts/Layout.astro";
+import StrapiBlockRenderer from "../../components/StrapiBlockRenderer";
+import { fetchApi, getStrapiMedia } from "../../lib/strapi";
+import type {
+    StrapiResponse,
+    TradicionAttributes,
+    StrapiData,
+} from "../../interfaces/strapi";
 
-// 1. Generamos las rutas estáticas
-export async function getStaticPaths() {
-    const tradiciones = await getCollection("tradiciones");
+export const prerender = false;
 
-    // AQUI ESTÁ EL CAMBIO: Le decimos explícitamente que 'entry' es una tradición
-    return tradiciones.map((entry: CollectionEntry<"tradiciones">) => ({
-        params: { slug: entry.slug },
-        props: { entry },
-    }));
+const { slug } = Astro.params;
+
+if (!slug) {
+    return Astro.redirect("/404");
 }
-// 2. DEFINIMOS EL TIPO DE PROPS (Esto arregla el error rojo)
-interface Props {
-    entry: CollectionEntry<"tradiciones">;
+
+let tradicion: StrapiData<TradicionAttributes> | undefined;
+
+try {
+    const response = await fetchApi<
+        StrapiResponse<StrapiData<TradicionAttributes>[]>
+    >({
+        endpoint: "tradiciones",
+        query: {
+            filters: {
+                slug: {
+                    $eq: slug,
+                },
+            },
+            populate: {
+                imagen_principal: "*",
+            },
+        },
+    });
+
+    if (response.data && response.data.length > 0) {
+        tradicion = response.data[0];
+    }
+} catch (error) {
+    console.error("Error cargando tradicion:", error);
 }
 
-// 3. Ahora Astro sabe que 'entry' tiene .data y .render()
-const { entry } = Astro.props;
-const { Content } = await entry.render();
+if (!tradicion) {
+    return Astro.redirect("/404");
+}
+
+const { titulo, contenido, imagen_principal } = tradicion.attributes;
+const imageUrl = getStrapiMedia(imagen_principal.data?.attributes?.url);
 ---
 
-<Layout title={entry.data.title}>
+<Layout title={titulo}>
     <div class="relative h-[50vh]">
-        <img
-            src={entry.data.image}
-            alt={entry.data.title}
-            class="w-full h-full object-cover"
-        />
+        {
+            imageUrl ? (
+                <img
+                    src={imageUrl}
+                    alt={titulo}
+                    class="w-full h-full object-cover"
+                    transition:name={`tradicion-image-${slug}`}
+                />
+            ) : (
+                <div class="w-full h-full bg-gray-800 flex items-center justify-center">
+                    <span class="text-white text-2xl">Sin imagen</span>
+                </div>
+            )
+        }
         <div
             class="absolute inset-0 bg-black/50 flex items-center justify-center"
         >
             <h1
                 class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg px-4 text-center"
             >
-                {entry.data.title}
+                {titulo}
             </h1>
         </div>
     </div>
 
     <article class="container mx-auto px-6 py-12 max-w-3xl">
-        <div class="prose prose-lg prose-blue mx-auto text-gray-700">
-            <Content />
+        <div
+            class="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-gray-100"
+        >
+            <StrapiBlockRenderer content={contenido} />
         </div>
 
         <div class="mt-12 border-t pt-8">
             <a
                 href="/#tradicion"
-                class="text-gob-primary font-bold hover:text-gob-accent flex items-center gap-2"
+                class="text-blue-900 font-bold hover:text-blue-600 flex items-center gap-2 transition-colors"
             >
                 &larr; Volver a Tradiciones
             </a>

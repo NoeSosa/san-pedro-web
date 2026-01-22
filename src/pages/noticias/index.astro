@@ -1,54 +1,83 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
+import NoticiaCard from "../../components/ui/NoticiaCard.astro";
+import { fetchApi } from "../../lib/strapi";
+import type {
+    StrapiResponse,
+    NoticiaAttributes,
+    EtiquetaAttributes,
+    StrapiData,
+} from "../../interfaces/strapi";
 
-// 1. Obtener datos
-const allNoticias = await getCollection("noticias");
-const allTags = await getCollection("etiquetas");
+// 1. Obtener datos de Strapi
+let noticias: StrapiData<NoticiaAttributes>[] = [];
+let etiquetas: StrapiData<EtiquetaAttributes>[] = [];
 
-// 2. Ordenar noticias por fecha
-const noticiasOrdenadas = allNoticias.sort(
-    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
+try {
+    // Fetch Noticias (Limitamos a 100 para esta vista general)
+    const noticiasRes = await fetchApi<
+        StrapiResponse<StrapiData<NoticiaAttributes>[]>
+    >({
+        endpoint: "noticias",
+        query: {
+            sort: ["fecha:desc"],
+            pagination: { limit: 100 },
+            populate: {
+                imagen_destacada: "*",
+                etiquetas: "*",
+            },
+        },
+    });
+    noticias = noticiasRes.data;
 
-// 3. Crear mapa de etiquetas para fácil acceso a colores y nombres
-const tagMap = new Map(allTags.map((tag) => [tag.id, tag.data]));
-
-// Función auxiliar para formatear fecha
-const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("es-MX", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    }).format(date);
-};
+    // Fetch Etiquetas
+    const etiquetasRes = await fetchApi<
+        StrapiResponse<StrapiData<EtiquetaAttributes>[]>
+    >({
+        endpoint: "etiquetas",
+        query: {
+            sort: ["nombre:asc"],
+        },
+    });
+    etiquetas = etiquetasRes.data;
+} catch (error) {
+    console.error("Error fetching news page data:", error);
+}
 ---
 
 <Layout title="Noticias y Comunicados | San Pedro Huamelula">
-    <div class="bg-gob-primary text-white py-16 text-center">
-        <h1 class="text-4xl font-bold">Noticias y Comunicados</h1>
-        <p class="mt-2 text-gob-accent text-lg">
-            Mantente informado sobre las acciones de tu gobierno
-        </p>
+    <div
+        class="bg-blue-900 text-white py-20 text-center relative overflow-hidden"
+    >
+        <div class="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
+        <div class="relative z-10 container mx-auto px-4">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+                Noticias y Comunicados
+            </h1>
+            <p class="text-blue-200 text-lg max-w-2xl mx-auto font-light">
+                Mantente informado sobre las acciones, obras y eventos de tu
+                gobierno municipal.
+            </p>
+        </div>
     </div>
 
-    <section class="py-12 bg-gray-50 min-h-screen">
+    <section class="py-16 bg-gray-50 min-h-screen">
         <div class="container mx-auto px-6">
             <!-- Filtros -->
-            <div class="flex flex-wrap justify-center gap-4 mb-12">
+            <div class="flex flex-wrap justify-center gap-3 mb-12">
                 <button
-                    class="filter-btn active px-6 py-2 rounded-full font-bold transition shadow-sm bg-gob-primary text-white hover:bg-gob-primary/90"
+                    class="filter-btn active px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm bg-blue-900 text-white ring-2 ring-blue-900 ring-offset-2"
                     data-filter="all"
                 >
                     Todas
                 </button>
                 {
-                    allTags.map((tag) => (
+                    etiquetas.map((tag) => (
                         <button
-                            class="filter-btn px-6 py-2 rounded-full font-bold transition shadow-sm bg-white text-gray-600 hover:bg-gray-100"
-                            data-filter={tag.id}
+                            class="filter-btn px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm bg-white text-gray-600 hover:bg-gray-100 hover:text-blue-900 border border-gray-200"
+                            data-filter={tag.attributes.slug}
                         >
-                            {tag.data.name}
+                            {tag.attributes.nombre}
                         </button>
                     ))
                 }
@@ -60,62 +89,49 @@ const formatDate = (date: Date) => {
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
                 {
-                    noticiasOrdenadas.map((noticia) => (
-                        <article
-                            class="news-item bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:-translate-y-1 hover:shadow-md transition duration-300"
-                            data-tag={noticia.data.tags?.id || "uncategorized"}
-                        >
-                            <div class="h-48 overflow-hidden relative">
-                                <img
-                                    src={noticia.data.image}
-                                    alt={noticia.data.title}
-                                    class="w-full h-full object-cover"
-                                />
+                    noticias.map((noticia) => {
+                        // Crear string de slugs de etiquetas para filtrado
+                        const tagSlugs = noticia.attributes.etiquetas.data
+                            .map((t) => t.attributes.slug)
+                            .join(",");
+
+                        return (
+                            <div
+                                class="news-item transition-all duration-500"
+                                data-tags={tagSlugs}
+                            >
+                                <NoticiaCard noticia={noticia} />
                             </div>
-                            <div class="p-6">
-                                <div class="flex items-center justify-between mb-3">
-                                    {noticia.data.tags && (
-                                        <span
-                                            class={`px-2 py-1 rounded text-xs font-bold ${tagMap.get(noticia.data.tags.id)?.color}`}
-                                        >
-                                            {
-                                                tagMap.get(noticia.data.tags.id)
-                                                    ?.name
-                                            }
-                                        </span>
-                                    )}
-                                    <span class="text-xs text-gray-400">
-                                        {formatDate(noticia.data.date)}
-                                    </span>
-                                </div>
-                                <h3 class="text-xl font-bold text-gob-primary mb-3 leading-tight">
-                                    <a
-                                        href={`/noticias/${noticia.slug}`}
-                                        class="hover:text-gob-accent transition"
-                                    >
-                                        {noticia.data.title}
-                                    </a>
-                                </h3>
-                                <p class="text-gray-600 text-sm line-clamp-3 mb-4">
-                                    {noticia.data.excerpt}
-                                </p>
-                                <a
-                                    href={`/noticias/${noticia.slug}`}
-                                    class="text-gob-accent font-bold text-sm hover:underline"
-                                >
-                                    Leer más &rarr;
-                                </a>
-                            </div>
-                        </article>
-                    ))
+                        );
+                    })
                 }
             </div>
 
             <!-- Mensaje cuando no hay resultados -->
-            <div id="no-results" class="hidden text-center py-12">
-                <p class="text-gray-500 text-lg">
-                    No se encontraron noticias con esta etiqueta.
+            <div id="no-results" class="hidden text-center py-20">
+                <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+                    <svg
+                        class="w-8 h-8 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        ><path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        ></path></svg
+                    >
+                </div>
+                <p class="text-gray-500 text-lg font-medium">
+                    No se encontraron noticias con esta categoría.
                 </p>
+                <button
+                    id="reset-filters"
+                    class="mt-4 text-blue-600 font-bold hover:underline"
+                >
+                    Ver todas las noticias
+                </button>
             </div>
         </div>
     </section>
@@ -126,45 +142,78 @@ const formatDate = (date: Date) => {
         const filterButtons = document.querySelectorAll(".filter-btn");
         const newsItems = document.querySelectorAll(".news-item");
         const noResultsMsg = document.getElementById("no-results");
+        const resetBtn = document.getElementById("reset-filters");
+
+        const filterNews = (filterValue: string) => {
+            let visibleCount = 0;
+
+            // Actualizar botones
+            filterButtons.forEach((b) => {
+                if (b.getAttribute("data-filter") === filterValue) {
+                    b.classList.remove(
+                        "bg-white",
+                        "text-gray-600",
+                        "border-gray-200",
+                    );
+                    b.classList.add(
+                        "bg-blue-900",
+                        "text-white",
+                        "ring-2",
+                        "ring-blue-900",
+                        "ring-offset-2",
+                    );
+                } else {
+                    b.classList.add(
+                        "bg-white",
+                        "text-gray-600",
+                        "border-gray-200",
+                    );
+                    b.classList.remove(
+                        "bg-blue-900",
+                        "text-white",
+                        "ring-2",
+                        "ring-blue-900",
+                        "ring-offset-2",
+                    );
+                }
+            });
+
+            // Filtrar items
+            newsItems.forEach((item) => {
+                const itemTags = (item.getAttribute("data-tags") || "").split(
+                    ",",
+                );
+
+                if (filterValue === "all" || itemTags.includes(filterValue)) {
+                    (item as HTMLElement).style.display = "block";
+                    // Pequeña animación de entrada
+                    (item as HTMLElement).style.opacity = "0";
+                    setTimeout(() => {
+                        (item as HTMLElement).style.opacity = "1";
+                    }, 50);
+                    visibleCount++;
+                } else {
+                    (item as HTMLElement).style.display = "none";
+                }
+            });
+
+            // Toggle mensaje
+            if (visibleCount === 0 && noResultsMsg) {
+                noResultsMsg.classList.remove("hidden");
+            } else if (noResultsMsg) {
+                noResultsMsg.classList.add("hidden");
+            }
+        };
 
         filterButtons.forEach((btn) => {
             btn.addEventListener("click", () => {
-                // Remover clase active de todos
-                filterButtons.forEach((b) => {
-                    b.classList.remove("bg-gob-primary", "text-white");
-                    b.classList.add("bg-white", "text-gray-600");
-                });
-
-                // Agregar clase active al clickeado
-                btn.classList.remove("bg-white", "text-gray-600");
-                btn.classList.add("bg-gob-primary", "text-white");
-
                 const filterValue = btn.getAttribute("data-filter");
-                let visibleCount = 0;
-
-                newsItems.forEach((item) => {
-                    const itemTag = item.getAttribute("data-tag");
-                    if (filterValue === "all" || filterValue === itemTag) {
-                        (item as HTMLElement).style.display = "block";
-                        visibleCount++;
-                    } else {
-                        (item as HTMLElement).style.display = "none";
-                    }
-                });
-
-                // Mostrar mensaje si no hay resultados
-                if (visibleCount === 0 && noResultsMsg) {
-                    noResultsMsg.classList.remove("hidden");
-                } else if (noResultsMsg) {
-                    noResultsMsg.classList.add("hidden");
-                }
+                if (filterValue) filterNews(filterValue);
             });
         });
-    });
 
-    // Fallback para cuando no se usa View Transitions o primera carga
-    if (!document.querySelector("script[data-astro-exec]")) {
-        const event = new Event("astro:page-load");
-        document.dispatchEvent(event);
-    }
+        resetBtn?.addEventListener("click", () => {
+            filterNews("all");
+        });
+    });
 </script>
