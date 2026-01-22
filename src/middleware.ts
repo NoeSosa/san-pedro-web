@@ -52,20 +52,32 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // AQUÍ ESTÁ EL CAMBIO IMPORTANTE (AL FINAL)
     // ============================================================
 
-    // 1. Ejecutamos la petición original y guardamos la respuesta en una variable
+    // 1. Ejecutamos la petición original
     const response = await next();
 
-    // 2. --- ZONA DE PRUEBA (SOLO PARA DIAGNÓSTICO) ---
-    // Interceptamos la respuesta justo antes de que salga al navegador
+    // --- DIAGNÓSTICO FINAL ---
     if (context.url.pathname.startsWith("/api/keystatic/github/login")) {
+        console.log("------------------------------------------------");
+        console.log("🔍 INSPECCIONANDO SALIDA DE /LOGIN");
+
+        // Verificamos si Keystatic intentó poner alguna cookie
+        const cookiesSalida = response.headers.getSetCookie(); // Obtiene todas las cookies
+
+        if (cookiesSalida.length > 0) {
+            console.log("✅ ¡EUREKA! Keystatic generó estas cookies:", cookiesSalida);
+        } else {
+            console.log("❌ ERROR CRÍTICO: Keystatic NO generó ninguna cookie de sesión.");
+            console.log("   Posibles causas: Secret inválido o Modo incorrecto.");
+        }
+
+        // Mantenemos la cookie testigo para verificar que Nginx no borre cosas
         response.headers.append(
             "Set-Cookie",
-            "TEST_COOKIE=funciona; Path=/; HttpOnly; SameSite=Lax; Secure"
+            "TEST_COOKIE=testigo; Path=/; HttpOnly; SameSite=Lax; Secure"
         );
-        console.log("✅ HE INYECTADO LA COOKIE DE PRUEBA MANUALMENTE");
+        console.log("------------------------------------------------");
     }
-    // ----------------------------------------------
+    // -------------------------
 
-    // 3. Devolvemos la respuesta (posiblemente modificada)
     return response;
 });
