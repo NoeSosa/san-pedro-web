@@ -3,114 +3,101 @@
 > Portal digital moderno, accesible y transparente para la gestión municipal y difusión cultural de San Pedro Huamelula.
 
 ![Estado del Proyecto](https://img.shields.io/badge/Estado-Producci%C3%B3n-green)
-![Astro](https://img.shields.io/badge/Astro-v5.0-orange)
-![Tailwind](https://img.shields.io/badge/Tailwind-v4.0-blue)
-![Keystatic](https://img.shields.io/badge/CMS-Keystatic-purple)
+![Astro](https://img.shields.io/badge/Astro-v5.15-orange)
+![Tailwind](https://img.shields.io/badge/Tailwind-v4.1-blue)
+![Strapi](https://img.shields.io/badge/CMS-Strapi_v5-purple)
 
-## 📋 Descripción
+## 📋 Análisis del Proyecto
 
-Este proyecto es una aplicación web estática (con capacidades de servidor) diseñada para mejorar la comunicación entre el gobierno municipal y la ciudadanía. Permite la publicación de noticias, gestión de documentos de transparencia, difusión de tradiciones y acceso rápido a trámites y números de emergencia.
+Este proyecto representa la evolución digital del municipio de San Pedro Huamelula. Construido sobre **Astro 5**, aprovecha la arquitectura de "islas" para ofrecer un rendimiento excepcional, manteniendo la interactividad necesaria en secciones clave mediante **React**.
+
+### Pilares Tecnológicos:
+- **Rendimiento Extremo:** Generación estática y bajo demanda (SSR) optimizada.
+- **Gestión de Contenido Headless:** Uso de **Strapi v5** como CMS centralizado para noticias, tradiciones y documentos.
+- **Diseño de Vanguardia:** Implementación de **Tailwind CSS v4**, utilizando su nuevo motor basado en Vite.
+- **Tipado Estricto:** Arquitectura robusta en TypeScript con interfaces definidas para todos los modelos de datos.
+
+---
+
+## ⚙️ Arquitectura de Datos (Strapi v5)
+
+El sitio consume contenido dinámico desde una API REST de Strapi. La capa de conexión se encuentra en `src/lib/strapi.ts`.
+
+### Modelos de Contenido
+El proyecto está diseñado para consumir las siguientes colecciones desde Strapi:
+
+| Colección | Descripción | Campos Clave |
+| :--- | :--- | :--- |
+| **Noticias** | Blog municipal. | `titulo`, `slug`, `contenido` (Blocks), `imagen_destacada`, `etiquetas`. |
+| **Tradiciones** | Difusión cultural. | `titulo`, `slug`, `descripcion`, `imagen_principal`. |
+| **Documentos** | Transparencia. | `titulo`, `fecha`, `archivo` (PDF), `categoria`. |
+| **Etiquetas** | Categorización. | `nombre`, `color`. |
+
+### Renderizado de Contenido Rico
+El contenido de las noticias utiliza el formato de bloques JSON de Strapi, renderizado mediante un componente personalizado en `src/components/StrapiBlockRenderer.tsx` que utiliza Tailwind Typography.
+
+---
 
 ## ✨ Características Principales
 
-* **📰 Portal de Noticias Dinámico:** Sistema tipo "Bento Grid" con noticias destacadas y listado cronológico. Soporte para etiquetas (badges) con colores personalizados.
-* **🎭 Carrusel de Tradiciones:** Sección visual para destacar la cultura local (Boda de la Lagarta, Danzas, etc.).
-* **📑 Transparencia Gubernamental:** Repositorio de documentos PDF (Actas, Finanzas, Obras) descargables y organizados por categorías.
-* **🛡️ Panel de Administración (CMS):** Gestión de contenido visual mediante **Keystatic**. No requiere tocar código para subir noticias o documentos.
-* **🔒 Seguridad:** Autenticación Básica (Middleware) para proteger el acceso al panel administrativo.
-* **🚨 Banner de Emergencias:** Acceso rápido a números de Policía, Protección Civil y Ambulancias desde cualquier parte del sitio.
+* **📰 Portal de Noticias Dinámico:** Sistema tipo "Bento Grid" con noticias destacadas y listado cronológico, alimentado por API.
+* **🎭 Carrusel de Tradiciones:** Sección visual interactiva para destacar la cultura local.
+* **📑 Transparencia Gubernamental:** Repositorio organizado de documentos PDF descargables.
+* **🚨 Banner de Emergencias:** Acceso rápido a números de auxilio persistente en todo el sitio.
 * **📱 Diseño Responsivo:** Optimizado para celulares, tablets y escritorio.
 
-## 🛠️ Tecnologías Utilizadas
+---
 
-* **Core:** [Astro](https://astro.build/) (con Adaptador Node.js).
+## 🛠️ Stack Tecnológico
+
+* **Frontend:** [Astro v5](https://astro.build/) (SSR con adaptador Node.js).
 * **Estilos:** [Tailwind CSS v4](https://tailwindcss.com/) + `@tailwindcss/typography`.
-* **CMS:** [Keystatic](https://keystatic.com/) (Modo Local).
-* **Componentes UI:** React (para carruseles y panel).
-* **Servidor:** Node.js + PM2 (Process Manager).
-* **Despliegue:** Cloudflare Tunnel.
+* **CMS:** [Strapi v5](https://strapi.io/) (Headless API).
+* **UI:** [React v19](https://react.dev/) & [Swiper](https://swiperjs.com/).
+* **Cliente HTTP:** Fetch nativo con utilidades personalizadas (`src/lib/strapi.ts`).
+
+---
 
 ## 🚀 Instalación y Desarrollo Local
 
-Si deseas clonar y editar este proyecto en tu computadora:
-
-1.  **Clonar el repositorio:**
+1.  **Clonar e Instalar:**
     ```bash
     git clone https://github.com/NoeSosa/san-pedro-web.git
-    cd san-pedro-web
-    ```
-
-2.  **Instalar dependencias:**
-    ```bash
     npm install
     ```
 
-3.  **Configurar Variables de Entorno:**
-    Crea un archivo `.env` en la raíz y define las credenciales de administración:
+2.  **Variables de Entorno (.env):**
+    Configura la conexión con tu instancia de Strapi:
     ```env
-    ADMIN_USER=admin
-    ADMIN_PASSWORD='TuContraseñaSegura'
+    PUBLIC_STRAPI_URL=http://localhost:1337
+    STRAPI_API_TOKEN=tu_token_de_api_aqui
     ```
 
-4.  **Iniciar servidor de desarrollo:**
+3.  **Ejecutar:**
     ```bash
     npm run dev
     ```
-    Visita `http://localhost:4321`.
 
-## 📝 Gestión de Contenido (Admin)
-
-Para agregar noticias, documentos o tradiciones:
-
-1.  Ingresa a `/keystatic` (ej: `http://localhost:4321/keystatic`).
-2.  Introduce las credenciales definidas en tu archivo `.env`.
-3.  **Importante:** En modo local, los cambios se guardan en tu disco duro (`src/content/`). Debes hacer `git push` para subirlos al repositorio.
-
-## 🖥️ Guía de Despliegue (Servidor Linux)
-
-El proyecto corre en un servidor Linux usando **PM2** para mantenerse activo 24/7 y **Cloudflare Tunnel** para la salida a internet.
-
-### Comandos de Mantenimiento
-
-Cada vez que subas cambios a GitHub, actualiza el servidor con estos pasos:
-
-1.  **Descargar cambios:**
-    ```bash
-    git pull origin main
-    ```
-
-2.  **Reconstruir el sitio:**
-    ```bash
-    npm run build
-    ```
-
-3.  **Reiniciar el proceso:**
-    ```bash
-    pm2 restart huamelula-web
-    ```
-
-### Comandos Útiles de PM2
-
-* Ver estado del servidor: `pm2 list`
-* Ver logs (errores/actividad): `pm2 logs huamelula-web`
-* Ver URL del túnel: `pm2 logs mi-tunel --lines 100`
+---
 
 ## 📂 Estructura del Proyecto
 
 ```text
 /
-├── public/              # Imágenes y Favicon
+├── public/              # Assets estáticos
 ├── src/
-│   ├── components/      # Componentes reutilizables (Card, Carrusel)
-│   ├── content/         # Base de datos local (Noticias, Tradiciones, Docs)
-│   │   └── config.ts    # Esquemas de datos (Zod)
-│   ├── layouts/         # Estructura principal (Header, Footer, Head)
-│   ├── pages/           # Rutas del sitio
-│   │   ├── noticias/    # Generación dinámica de noticias
-│   │   ├── tramite.astro
-│   │   └── transparencia.astro
-│   ├── styles/          # CSS Global (Tailwind config)
-│   └── middleware.ts    # Seguridad y protección de rutas
-├── astro.config.mjs     # Configuración de Astro
-├── keystatic.config.ts  # Configuración del CMS
-└── package.json
+│   ├── components/      # Islas de React y componentes Astro
+│   │   └── StrapiBlockRenderer.tsx # Renderizador de Rich Text
+│   ├── interfaces/      # Tipos TypeScript para modelos de Strapi
+│   │   └── strapi.ts
+│   ├── lib/             # Lógica de cliente API
+│   │   └── strapi.ts
+│   ├── layouts/         # Plantillas maestras
+│   ├── pages/           # Enrutamiento
+│   │   └── noticias/
+│   │       └── [slug].astro # Página dinámica de noticias
+│   ├── styles/          # Configuración global de Tailwind 4
+│   └── middleware.ts    # Middleware de Astro
+├── astro.config.mjs     # Configuración del motor Astro
+└── package.json         # Dependencias
+```

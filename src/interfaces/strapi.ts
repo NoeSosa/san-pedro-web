@@ -1,0 +1,112 @@
+export interface StrapiMeta {
+    pagination: {
+        page: number;
+        pageSize: number;
+        pageCount: number;
+        total: number;
+    };
+}
+
+export interface StrapiResponse<T> {
+    data: T;
+    meta: StrapiMeta;
+}
+
+export interface StrapiData<T> {
+    id: number;
+    documentId: string;
+    attributes: T;
+}
+
+export interface StrapiImageFormat {
+    name: string;
+    hash: string;
+    ext: string;
+    mime: string;
+    path: string | null;
+    width: number;
+    height: number;
+    size: number;
+    sizeInBytes: number;
+    url: string;
+}
+
+export interface StrapiImageAttributes {
+    name: string;
+    alternativeText: string | null;
+    caption: string | null;
+    width: number;
+    height: number;
+    formats: {
+        thumbnail?: StrapiImageFormat;
+        small?: StrapiImageFormat;
+        medium?: StrapiImageFormat;
+        large?: StrapiImageFormat;
+    };
+    hash: string;
+    ext: string;
+    mime: string;
+    size: number;
+    url: string;
+    previewUrl: string | null;
+    provider: string;
+    provider_metadata: any;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface StrapiMedia {
+    data: StrapiData<StrapiImageAttributes> | null;
+}
+
+export interface StrapiMediaArray {
+    data: StrapiData<StrapiImageAttributes>[];
+}
+
+// --- Modelos Específicos ---
+
+export interface EtiquetaAttributes {
+    nombre: string;
+    slug: string;
+    color: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface NoticiaAttributes {
+    titulo: string;
+    slug: string;
+    fecha: string;
+    contenido: any[]; // Blocks JSON
+    destacado: boolean;
+    imagen_destacada: StrapiMedia;
+    etiquetas: {
+        data: StrapiData<EtiquetaAttributes>[];
+    };
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
+
+export interface TradicionAttributes {
+    titulo: string;
+    slug: string;
+    descripcion: string;
+    contenido: any[]; // Blocks JSON
+    imagen_principal: StrapiMedia;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
+
+export type DocumentoCategoria = 'actas' | 'finanzas' | 'obras' | 'otros';
+
+export interface DocumentoAttributes {
+    titulo: string;
+    fecha: string;
+    archivo: StrapiMedia;
+    categoria: DocumentoCategoria;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
