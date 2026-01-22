@@ -1,7 +1,7 @@
 // keystatic.config.ts
 import { config, fields, collection } from '@keystatic/core';
 
-const isGithubMode = import.meta.env.PUBLIC_KEYSTATIC_MODE === 'github';
+const isGithubMode = true;
 
 export default config({
     storage: isGithubMode
