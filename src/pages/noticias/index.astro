@@ -20,7 +20,7 @@ try {
     >({
         endpoint: "noticias",
         query: {
-            sort: ["fecha:desc"],
+            sort: ["fecha_publicacion:desc"],
             pagination: { limit: 100 },
             populate: {
                 imagen_destacada: "*",

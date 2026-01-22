@@ -80,7 +80,7 @@ export interface EtiquetaAttributes {
 export interface NoticiaAttributes {
     titulo: string;
     slug: string;
-    fecha: string; // ISO Date string
+    fecha_publicacion: string; // ISO Date string
     contenido: BlocksContent; // Rich Text Blocks
     destacado: boolean;
     imagen_destacada: StrapiMedia;

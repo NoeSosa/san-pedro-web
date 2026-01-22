@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tradiciones",
+  "info": {
+    "singularName": "tradicion",
+    "pluralName": "tradiciones",
+    "displayName": "Tradicion"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titulo": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "titulo"
+    },
+    "descripcion": {
+      "type": "blocks"
+    },
+    "imagen_principal": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}
