@@ -11,12 +11,12 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "titulo": {
+      "type": "string"
+    },
     "slug": {
       "type": "uid",
       "targetField": "titulo"
-    },
-    "titulo": {
-      "type": "string"
     },
     "contenido": {
       "type": "blocks"
@@ -33,6 +33,15 @@
     },
     "fecha_publicacion": {
       "type": "date"
+    },
+    "etiquetas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::etiqueta.etiqueta",
+      "inversedBy": "noticias"
+    },
+    "Destacado": {
+      "type": "boolean"
     }
   }
 }

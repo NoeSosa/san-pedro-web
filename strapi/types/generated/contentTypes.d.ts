@@ -461,6 +461,36 @@ export interface ApiDocumentoDocumento extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiEtiquetaEtiqueta extends Struct.CollectionTypeSchema {
+  collectionName: 'etiquetas';
+  info: {
+    displayName: 'Etiqueta';
+    pluralName: 'etiquetas';
+    singularName: 'etiqueta';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    color: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::etiqueta.etiqueta'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String;
+    noticias: Schema.Attribute.Relation<'manyToMany', 'api::noticia.noticia'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
   collectionName: 'noticias';
   info: {
@@ -476,6 +506,11 @@ export interface ApiNoticiaNoticia extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    Destacado: Schema.Attribute.Boolean;
+    etiquetas: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::etiqueta.etiqueta'
+    >;
     fecha_publicacion: Schema.Attribute.Date;
     imagen_destacada: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
@@ -1040,6 +1075,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::documento.documento': ApiDocumentoDocumento;
+      'api::etiqueta.etiqueta': ApiEtiquetaEtiqueta;
       'api::noticia.noticia': ApiNoticiaNoticia;
       'api::tradicion.tradicion': ApiTradicionTradicion;
       'plugin::content-releases.release': PluginContentReleasesRelease;
