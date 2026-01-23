@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from "../layouts/Layout.astro";
 import TraditionCarousel from "../components/TraditionCarousel"; // .tsx now
 import NoticiaCard from "../components/ui/NoticiaCard.astro";
@@ -21,10 +21,20 @@ try {
 	>({
 		endpoint: "noticias",
 		query: {
-			sort: ["fecha:desc"],
+			sort: ["fecha_publicacion:desc"],
 			populate: {
-				imagen_destacada: "*",
-				etiquetas: "*",
+				imagen_destacada: {
+					fields: [
+						"url",
+						"alternativeText",
+						"width",
+						"height",
+						"formats",
+					],
+				},
+				etiquetas: {
+					fields: ["nombre", "color"],
+				},
 			},
 			pagination: {
 				limit: 15, // Traemos suficientes para destacar y listar
@@ -40,7 +50,15 @@ try {
 		endpoint: "tradiciones",
 		query: {
 			populate: {
-				imagen_principal: "*",
+				imagen_principal: {
+					fields: [
+						"url",
+						"alternativeText",
+						"width",
+						"height",
+						"formats",
+					],
+				},
 			},
 		},
 	});
@@ -50,10 +68,8 @@ try {
 }
 
 // 2. SEPARAR DESTACADAS VS NORMALES
-const destacadas = noticias.filter((n) => n.attributes.destacado).slice(0, 5);
-const ultimasNoticias = noticias
-	.filter((n) => !n.attributes.destacado)
-	.slice(0, 6);
+const destacadas = noticias.filter((n) => n.Destacado).slice(0, 5);
+const ultimasNoticias = noticias.filter((n) => !n.Destacado).slice(0, 6);
 
 // Si no hay destacadas, usar las primeras como fallback
 if (destacadas.length === 0 && noticias.length > 0) {
@@ -271,31 +287,28 @@ const formatDate = (dateString: string) => {
 						<article class="relative group overflow-hidden rounded-3xl shadow-2xl h-96 lg:h-[600px]">
 							<img
 								src={getStrapiMedia(
-									destacadas[0].attributes.imagen_destacada
-										.data?.attributes?.url,
+									destacadas[0].imagen_destacada?.[0]?.url,
 								)}
-								alt={destacadas[0].attributes.titulo}
+								alt={destacadas[0].titulo}
 								class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-1000"
 							/>
 							<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-90" />
 							<div class="absolute bottom-0 left-0 p-8 md:p-12 w-full">
 								<div class="flex flex-wrap gap-2 mb-4">
-									{destacadas[0].attributes.etiquetas.data.map(
-										(tag) => (
-											<span
-												class={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide backdrop-blur-md ${tag.attributes.color || "bg-white/20 text-white"}`}
-											>
-												{tag.attributes.nombre}
-											</span>
-										),
-									)}
+									{destacadas[0].etiquetas?.map((tag) => (
+										<span
+											class={`inline-block px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wide backdrop-blur-md ${tag.color || "bg-white/20 text-white"}`}
+										>
+											{tag.nombre}
+										</span>
+									))}
 								</div>
 								<h3 class="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
 									<a
-										href={`/noticias/${destacadas[0].attributes.slug}`}
+										href={`/noticias/${destacadas[0].slug}`}
 										class="hover:text-blue-200 transition-colors"
 									>
-										{destacadas[0].attributes.titulo}
+										{destacadas[0].titulo}
 									</a>
 								</h3>
 								<div class="flex items-center text-gray-300 text-sm font-medium">
@@ -312,7 +325,9 @@ const formatDate = (dateString: string) => {
 											d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
 										/>
 									</svg>
-									{formatDate(destacadas[0].attributes.fecha)}
+									{formatDate(
+										destacadas[0].fecha_publicacion,
+									)}
 								</div>
 							</div>
 						</article>
@@ -324,25 +339,22 @@ const formatDate = (dateString: string) => {
 									<div class="h-48 overflow-hidden relative">
 										<img
 											src={getStrapiMedia(
-												noticia.attributes
-													.imagen_destacada.data
-													?.attributes?.formats?.small
-													?.url ||
-													noticia.attributes
-														.imagen_destacada.data
-														?.attributes?.url,
+												noticia.imagen_destacada?.[0]
+													?.formats?.small?.url ||
+													noticia.imagen_destacada?.[0]
+														?.url,
 											)}
-											alt={noticia.attributes.titulo}
+											alt={noticia.titulo}
 											class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
 										/>
 										<div class="absolute top-3 left-3 flex gap-1">
-											{noticia.attributes.etiquetas.data
+											{noticia.etiquetas
 												.slice(0, 1)
 												.map((tag) => (
 													<span
-														class={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm ${tag.attributes.color || "bg-white text-gray-800"}`}
+														class={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide shadow-sm ${tag.color || "bg-white text-gray-800"}`}
 													>
-														{tag.attributes.nombre}
+														{tag.nombre}
 													</span>
 												))}
 										</div>
@@ -350,18 +362,18 @@ const formatDate = (dateString: string) => {
 									<div class="p-6 flex flex-col flex-grow">
 										<time class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-2">
 											{formatDate(
-												noticia.attributes.fecha,
+												noticia.fecha_publicacion,
 											)}
 										</time>
 										<h4 class="font-bold text-xl text-gray-900 mb-3 line-clamp-3 leading-snug group-hover:text-blue-700 transition-colors">
 											<a
-												href={`/noticias/${noticia.attributes.slug}`}
+												href={`/noticias/${noticia.slug}`}
 											>
-												{noticia.attributes.titulo}
+												{noticia.titulo}
 											</a>
 										</h4>
 										<a
-											href={`/noticias/${noticia.attributes.slug}`}
+											href={`/noticias/${noticia.slug}`}
 											class="mt-auto text-blue-600 font-bold text-sm hover:underline inline-flex items-center"
 										>
 											Leer nota completa{" "}

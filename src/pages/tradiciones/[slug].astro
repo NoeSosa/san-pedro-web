@@ -46,8 +46,8 @@ if (!tradicion) {
     return Astro.redirect("/404");
 }
 
-const { titulo, contenido, imagen_principal } = tradicion.attributes;
-const imageUrl = getStrapiMedia(imagen_principal.data?.attributes?.url);
+const { titulo, contenido, imagen_principal } = tradicion;
+const imageUrl = getStrapiMedia(imagen_principal?.[0]?.url);
 ---
 
 <Layout title={titulo}>

@@ -7,19 +7,23 @@ interface Props {
 }
 
 const { noticia } = Astro.props;
-const { titulo, slug, fecha, imagen_destacada, etiquetas } = noticia.attributes;
+const { titulo, slug, fecha_publicacion, imagen_destacada, etiquetas } =
+    noticia;
+
+// Extraemos la primera imagen del array (ya que Strapi devuelve un array)
+const imgData = imagen_destacada?.[0];
 
 // Optimización de imagen: Preferir 'small' para tarjetas, fallback a original
-const imageUrl = getStrapiMedia(
-    imagen_destacada.data?.attributes?.formats?.small?.url ||
-        imagen_destacada.data?.attributes?.url,
-);
+const imageUrl = getStrapiMedia(imgData?.formats?.small?.url || imgData?.url);
 
-const fechaFormateada = new Date(fecha).toLocaleDateString("es-MX", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-});
+const fechaFormateada = new Date(fecha_publicacion).toLocaleDateString(
+    "es-MX",
+    {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    },
+);
 ---
 
 <a
@@ -61,13 +65,13 @@ const fechaFormateada = new Date(fecha).toLocaleDateString("es-MX", {
         {/* Etiquetas (Badges) */}
         <div class="absolute top-3 left-3 flex flex-wrap gap-2 z-10">
             {
-                etiquetas.data
-                    .slice(0, 2)
+                etiquetas
+                    ?.slice(0, 2)
                     .map((tag) => (
                         <span
-                            class={`text-[10px] font-bold px-2 py-1 rounded-md shadow-sm backdrop-blur-md uppercase tracking-wide ${tag.attributes.color || "bg-white/90 text-gray-800"}`}
+                            class={`text-[10px] font-bold px-2 py-1 rounded-md shadow-sm backdrop-blur-md uppercase tracking-wide ${tag.color || "bg-white/90 text-gray-800"}`}
                         >
-                            {tag.attributes.nombre}
+                            {tag.nombre}
                         </span>
                     ))
             }
@@ -77,7 +81,7 @@ const fechaFormateada = new Date(fecha).toLocaleDateString("es-MX", {
     {/* Contenido de la Tarjeta */}
     <div class="flex flex-col flex-grow p-5">
         <time
-            datetime={fecha}
+            datetime={fecha_publicacion}
             class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mb-2"
         >
             {fechaFormateada}

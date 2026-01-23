@@ -23,8 +23,18 @@ try {
             sort: ["fecha_publicacion:desc"],
             pagination: { limit: 100 },
             populate: {
-                imagen_destacada: "*",
-                etiquetas: "*",
+                imagen_destacada: {
+                    fields: [
+                        "url",
+                        "alternativeText",
+                        "width",
+                        "height",
+                        "formats",
+                    ],
+                },
+                etiquetas: {
+                    fields: ["nombre", "color"],
+                },
             },
         },
     });
@@ -75,9 +85,9 @@ try {
                     etiquetas.map((tag) => (
                         <button
                             class="filter-btn px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm bg-white text-gray-600 hover:bg-gray-100 hover:text-blue-900 border border-gray-200"
-                            data-filter={tag.attributes.slug}
+                            data-filter={tag.nombre}
                         >
-                            {tag.attributes.nombre}
+                            {tag.nombre}
                         </button>
                     ))
                 }
@@ -90,15 +100,15 @@ try {
             >
                 {
                     noticias.map((noticia) => {
-                        // Crear string de slugs de etiquetas para filtrado
-                        const tagSlugs = noticia.attributes.etiquetas.data
-                            .map((t) => t.attributes.slug)
+                        // Crear string de nombres de etiquetas para filtrado
+                        const tagNames = noticia.etiquetas
+                            .map((t) => t.nombre)
                             .join(",");
 
                         return (
                             <div
                                 class="news-item transition-all duration-500"
-                                data-tags={tagSlugs}
+                                data-tags={tagNames}
                             >
                                 <NoticiaCard noticia={noticia} />
                             </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { getStrapiMedia } from '../lib/strapi';
@@ -34,10 +34,14 @@ export default function TraditionCarousel({ tradiciones }: TraditionCarouselProp
             className="w-full py-10 px-4 tradition-swiper"
         >
             {tradiciones.map((tradicion) => {
-                const { titulo, slug, descripcion, imagen_principal } = tradicion.attributes;
+                const { titulo, slug, descripcion, imagen_principal } = tradicion;
+
+                // Extraemos la primera imagen del array (ya que Strapi devuelve un array)
+                const imgData = imagen_principal?.[0];
+
                 const imageUrl = getStrapiMedia(
-                    imagen_principal.data?.attributes?.formats?.medium?.url ||
-                    imagen_principal.data?.attributes?.url
+                    imgData?.formats?.medium?.url ||
+                    imgData?.url
                 );
 
                 return (

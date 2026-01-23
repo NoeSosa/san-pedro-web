@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import StrapiBlockRenderer from "../../components/StrapiBlockRenderer";
+import ImageCarousel from "../../components/ImageCarousel";
 import { fetchApi, getStrapiMedia } from "../../lib/strapi";
 import type {
     StrapiResponse,
@@ -31,8 +32,18 @@ try {
                 },
             },
             populate: {
-                imagen_destacada: "*",
-                etiquetas: "*",
+                imagen_destacada: {
+                    fields: [
+                        "url",
+                        "alternativeText",
+                        "width",
+                        "height",
+                        "formats",
+                    ],
+                },
+                etiquetas: {
+                    fields: ["nombre", "color"],
+                },
             },
         },
     });
@@ -48,29 +59,40 @@ if (!noticia) {
     return Astro.redirect("/404");
 }
 
-const { titulo, fecha, contenido, imagen_destacada, etiquetas } =
-    noticia.attributes;
-const imageUrl = getStrapiMedia(imagen_destacada.data?.attributes?.url);
+const { titulo, fecha_publicacion, contenido, imagen_destacada, etiquetas } =
+    noticia;
+
+// Preparar las imágenes para el carrusel
+const imagenes =
+    imagen_destacada?.map((img) => ({
+        url: getStrapiMedia(img.url),
+        alt: img.alternativeText || titulo,
+        width: img.width,
+        height: img.height,
+    })) || [];
 
 // Formatear fecha
-const fechaFormateada = new Date(fecha).toLocaleDateString("es-MX", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-});
+const fechaFormateada = new Date(fecha_publicacion).toLocaleDateString(
+    "es-MX",
+    {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    },
+);
 ---
 
-<Layout title={titulo} description={titulo}>
+<Layout title={titulo}>
     <article class="max-w-4xl mx-auto px-4 py-12">
         {/* Cabecera de la Noticia */}
         <header class="mb-10 text-center">
             <div class="flex flex-wrap justify-center gap-2 mb-4">
                 {
-                    etiquetas.data.map((tag) => (
+                    etiquetas?.map((tag) => (
                         <span
-                            class={`px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wide ${tag.attributes.color || "bg-gray-100 text-gray-800"}`}
+                            class={`px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wide ${tag.color || "bg-gray-100 text-gray-800"}`}
                         >
-                            {tag.attributes.nombre}
+                            {tag.nombre}
                         </span>
                     ))
                 }
@@ -83,26 +105,18 @@ const fechaFormateada = new Date(fecha).toLocaleDateString("es-MX", {
             </h1>
 
             <time
-                datetime={fecha}
+                datetime={fecha_publicacion}
                 class="text-gray-500 dark:text-gray-400 text-lg font-medium"
             >
                 {fechaFormateada}
             </time>
         </header>
 
-        {/* Imagen Destacada */}
+        {/* Carrusel de Imágenes */}
         {
-            imageUrl && (
-                <div class="mb-12 rounded-2xl overflow-hidden shadow-2xl aspect-video bg-gray-100 dark:bg-gray-800">
-                    <img
-                        src={imageUrl}
-                        alt={
-                            imagen_destacada.data?.attributes
-                                ?.alternativeText || titulo
-                        }
-                        class="w-full h-full object-cover"
-                        transition:name={`image-${slug}`}
-                    />
+            imagenes.length > 0 && (
+                <div class="mb-12">
+                    <ImageCarousel client:load images={imagenes} />
                 </div>
             )
         }

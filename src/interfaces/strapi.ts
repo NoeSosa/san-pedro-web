@@ -16,11 +16,13 @@ export interface StrapiResponse<T> {
     meta: StrapiMeta;
 }
 
-export interface StrapiData<T> {
+export type StrapiData<T> = T & {
     id: number;
     documentId: string;
-    attributes: T;
-}
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+};
 
 export interface StrapiImageFormat {
     name: string;
@@ -71,7 +73,6 @@ export interface StrapiMediaArray {
 
 export interface EtiquetaAttributes {
     nombre: string;
-    slug: string;
     color: string;
     createdAt: string;
     updatedAt: string;
@@ -82,11 +83,9 @@ export interface NoticiaAttributes {
     slug: string;
     fecha_publicacion: string; // ISO Date string
     contenido: BlocksContent; // Rich Text Blocks
-    destacado: boolean;
-    imagen_destacada: StrapiMedia;
-    etiquetas: {
-        data: StrapiData<EtiquetaAttributes>[];
-    };
+    Destacado: boolean;
+    imagen_destacada: StrapiData<StrapiImageAttributes>[] | null;
+    etiquetas: StrapiData<EtiquetaAttributes>[];
     createdAt: string;
     updatedAt: string;
     publishedAt: string;
@@ -97,7 +96,7 @@ export interface TradicionAttributes {
     slug: string;
     descripcion: string;
     contenido: BlocksContent;
-    imagen_principal: StrapiMedia;
+    imagen_principal: StrapiData<StrapiImageAttributes>[] | null;
     createdAt: string;
     updatedAt: string;
     publishedAt: string;

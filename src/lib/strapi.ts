@@ -6,7 +6,6 @@ interface FetchApiProps {
 
 /**
  * Helper to stringify nested objects for Strapi query params.
- * Handles arrays and deep objects recursively.
  */
 function stringifyQuery(query: Record<string, any>, prefix = ''): string {
     return Object.keys(query)
@@ -32,14 +31,21 @@ function stringifyQuery(query: Record<string, any>, prefix = ''): string {
 
 /**
  * Core fetch wrapper for Strapi v5 API.
- * Uses native fetch and handles errors gracefully.
  */
 export async function fetchApi<T>({
     endpoint,
     query,
     token,
 }: FetchApiProps): Promise<T> {
-    const baseUrl = (import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '');
+    // LOGICA NUEVA:
+    // Si estamos en el servidor (SSR), usamos la IP interna (STRAPI_URL).
+    // Si estamos en el cliente, usamos la pública (PUBLIC_STRAPI_URL).
+    // Si no hay ninguna, fallback a localhost.
+    const internalUrl = import.meta.env.STRAPI_URL || import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
+
+    // Quitamos la barra final si existe
+    const baseUrl = internalUrl.replace(/\/$/, '');
+
     const apiToken = token || import.meta.env.STRAPI_API_TOKEN;
 
     // Normalize endpoint
@@ -57,6 +63,7 @@ export async function fetchApi<T>({
     }
 
     try {
+        // console.log(`Fetching internal URL: ${url}`); // Descomenta si necesitas depurar
         const res = await fetch(url, { headers });
 
         if (!res.ok) {
@@ -82,7 +89,7 @@ export async function fetchApi<T>({
 
 /**
  * Resolves the absolute URL for a Strapi media asset.
- * Supports local uploads and external providers (S3, Cloudinary).
+ * SIEMPRE usa la URL PÚBLICA porque esto lo ve el usuario.
  */
 export function getStrapiMedia(url: string | null | undefined): string | null {
     if (!url) return null;
@@ -92,6 +99,7 @@ export function getStrapiMedia(url: string | null | undefined): string | null {
         return url;
     }
 
+    // AQUI SIEMPRE USAMOS LA URL PUBLICA (https://admin...)
     const baseUrl = (import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '');
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
 
