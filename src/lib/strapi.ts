@@ -20,16 +20,9 @@ function stringifyQuery(query: Record<string, any>, prefix = ''): string {
 export async function fetchApi<T>({ endpoint, query, token }: FetchApiProps): Promise<T> {
     // 1. LEER VARIABLES (Con limpieza de espacios)
     const envStrapiUrl = process.env['STRAPI_URL']?.trim(); 
-    const publicStrapiUrl = import.meta.env.PUBLIC_STRAPI_URL?.trim();
+    const publicStrapiUrl = process.env['PUBLIC_STRAPI_URL']?.trim() || import.meta.env.PUBLIC_STRAPI_URL?.trim();
     
-    // 2. LOG DE DEPURACIÓN (Míralo en 'docker logs san_pedro_frontend')
-    console.log('🔍 [Strapi Debug] Variables:', { 
-        envStrapiUrl, 
-        publicStrapiUrl,
-        finalDecision: envStrapiUrl || publicStrapiUrl || 'http://localhost:1337'
-    });
-
-    // 3. SELECCIÓN DE URL (Prioridad: Interna -> Pública -> Localhost)
+    // 2. SELECCIÓN DE URL (Prioridad: Interna -> Pública -> Localhost)
     const internalUrl = envStrapiUrl || publicStrapiUrl || 'http://localhost:1337';
     const baseUrl = internalUrl.replace(/\/$/, '');
     
@@ -37,7 +30,7 @@ export async function fetchApi<T>({ endpoint, query, token }: FetchApiProps): Pr
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     const queryString = query ? stringifyQuery(query) : '';
     
-    // 4. CONSTRUCCIÓN FINAL
+    // 3. CONSTRUCCIÓN FINAL
     const url = `${baseUrl}/api/${cleanEndpoint}${queryString ? `?${queryString}` : ''}`;
 
     // Validar esquema antes de lanzar el fetch para evitar el error "unknown scheme"
@@ -73,8 +66,10 @@ export function getStrapiMedia(url: string | null | undefined): string | null {
     if (!url) return null;
     if (url.startsWith('http') || url.startsWith('//')) return url;
     
-    // Para imágenes siempre usamos la pública
-    const baseUrl = (import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '');
+    const envPublicUrl = typeof process !== 'undefined' ? process.env['PUBLIC_STRAPI_URL'] : undefined;
+    const publicUrl = envPublicUrl || import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    
+    const baseUrl = publicUrl.replace(/\/$/, '');
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
     return `${baseUrl}${cleanUrl}`;
 }
