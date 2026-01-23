@@ -41,7 +41,7 @@ export async function fetchApi<T>({
     // Si estamos en el servidor (SSR), usamos la IP interna (STRAPI_URL).
     // Si estamos en el cliente, usamos la pública (PUBLIC_STRAPI_URL).
     // Si no hay ninguna, fallback a localhost.
-    const internalUrl = import.meta.env.STRAPI_URL || import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
+    const internalUrl = process.env['STRAPI_URL'] || import.meta.env.STRAPI_URL || import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
 
     // Quitamos la barra final si existe
     const baseUrl = internalUrl.replace(/\/$/, '');
