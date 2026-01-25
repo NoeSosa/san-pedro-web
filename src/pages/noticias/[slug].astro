@@ -62,14 +62,22 @@ if (!noticia) {
 const { titulo, fecha_publicacion, contenido, imagen_destacada, etiquetas } =
     noticia;
 
-// Preparar las imágenes para el carrusel
-const imagenes =
-    imagen_destacada?.map((img) => ({
+// Preparar las imágenes para el carrusel (filtrar las que no tengan URL)
+// Asegurarse de que imagen_destacada sea un array antes de usar .map()
+const imagenesArray = Array.isArray(imagen_destacada) ? imagen_destacada : [];
+const imagenes = imagenesArray
+    .map((img) => ({
         url: getStrapiMedia(img.url),
         alt: img.alternativeText || titulo,
         width: img.width,
         height: img.height,
-    })) || [];
+    }))
+    .filter((img) => img.url !== null) as {
+    url: string;
+    alt: string;
+    width: number;
+    height: number;
+}[];
 
 // Formatear fecha
 const fechaFormateada = new Date(fecha_publicacion).toLocaleDateString(
@@ -85,7 +93,9 @@ const fechaFormateada = new Date(fecha_publicacion).toLocaleDateString(
 <Layout title={titulo}>
     <article class="max-w-4xl mx-auto px-4 py-12">
         {/* Cabecera de la Noticia */}
-        <header class="mb-10 text-center">
+        <header
+            class="mb-10 text-center bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"
+        >
             <div class="flex flex-wrap justify-center gap-2 mb-4">
                 {
                     etiquetas?.map((tag) => (
@@ -99,14 +109,14 @@ const fechaFormateada = new Date(fecha_publicacion).toLocaleDateString(
             </div>
 
             <h1
-                class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight"
+                class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight drop-shadow-sm"
             >
                 {titulo}
             </h1>
 
             <time
                 datetime={fecha_publicacion}
-                class="text-gray-500 dark:text-gray-400 text-lg font-medium"
+                class="text-gray-600 dark:text-gray-300 text-lg font-medium"
             >
                 {fechaFormateada}
             </time>

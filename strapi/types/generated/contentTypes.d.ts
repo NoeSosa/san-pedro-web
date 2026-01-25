@@ -442,7 +442,9 @@ export interface ApiDocumentoDocumento extends Struct.CollectionTypeSchema {
   };
   attributes: {
     archivo: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    categoria: Schema.Attribute.Enumeration<['Obras']>;
+    categoria: Schema.Attribute.Enumeration<
+      ['Obras', 'Finanzas', 'Actas', 'Normatividad', 'Otros']
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -547,7 +549,8 @@ export interface ApiTradicionTradicion extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     descripcion: Schema.Attribute.Blocks;
     imagen_principal: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
+      'images' | 'files' | 'videos' | 'audios',
+      true
     >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<

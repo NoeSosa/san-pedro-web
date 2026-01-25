@@ -13,6 +13,23 @@ interface TraditionCarouselProps {
     tradiciones: StrapiData<TradicionAttributes>[];
 }
 
+// Helper function to extract plain text from BlocksContent
+const extractTextFromBlocks = (blocks: any): string => {
+    if (!blocks || !Array.isArray(blocks)) return '';
+
+    let text = '';
+    for (const block of blocks) {
+        if (block.children && Array.isArray(block.children)) {
+            for (const child of block.children) {
+                if (child.type === 'text' && child.text) {
+                    text += child.text + ' ';
+                }
+            }
+        }
+    }
+    return text.trim();
+};
+
 export default function TraditionCarousel({ tradiciones }: TraditionCarouselProps) {
     if (!tradiciones || tradiciones.length === 0) {
         return null;
@@ -44,6 +61,9 @@ export default function TraditionCarousel({ tradiciones }: TraditionCarouselProp
                     imgData?.url
                 );
 
+                // Extraer texto plano de la descripción (BlocksContent)
+                const descripcionTexto = extractTextFromBlocks(descripcion);
+
                 return (
                     <SwiperSlide key={tradicion.documentId || tradicion.id} className="pb-12">
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden h-full border border-gray-100 dark:border-gray-700 flex flex-col hover:shadow-2xl transition-shadow duration-300">
@@ -68,7 +88,7 @@ export default function TraditionCarousel({ tradiciones }: TraditionCarouselProp
                                     {titulo}
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-grow line-clamp-3">
-                                    {descripcion}
+                                    {descripcionTexto || 'Descubre más sobre esta tradición...'}
                                 </p>
                                 <a
                                     href={`/tradiciones/${slug}`}

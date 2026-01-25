@@ -102,12 +102,12 @@ export interface TradicionAttributes {
     publishedAt: string;
 }
 
-export type DocumentoCategoria = 'actas' | 'finanzas' | 'obras' | 'otros';
+export type DocumentoCategoria = 'actas' | 'finanzas' | 'obras' | 'normatividad' | 'otros';
 
 export interface DocumentoAttributes {
     titulo: string;
     fecha: string;
-    archivo: StrapiMedia;
+    archivo: StrapiImageAttributes | null;  // Single media - sin wrapper data
     categoria: DocumentoCategoria;
     createdAt: string;
     updatedAt: string;

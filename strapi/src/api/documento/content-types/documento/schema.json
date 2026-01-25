@@ -30,7 +30,11 @@
     "categoria": {
       "type": "enumeration",
       "enum": [
-        "Obras"
+        "Obras",
+        "Finanzas",
+        "Actas",
+        "Normatividad",
+        "Otros"
       ]
     }
   }

@@ -23,7 +23,7 @@
     },
     "imagen_principal": {
       "type": "media",
-      "multiple": false,
+      "multiple": true,
       "allowedTypes": [
         "images",
         "files",
