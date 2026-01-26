@@ -14,11 +14,14 @@
     "titulo": {
       "type": "string"
     },
+    "descripcion": {
+      "type": "text"
+    },
     "slug": {
       "type": "uid",
       "targetField": "titulo"
     },
-    "descripcion": {
+    "contenido": {
       "type": "blocks"
     },
     "imagen_principal": {

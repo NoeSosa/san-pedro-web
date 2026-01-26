@@ -544,10 +544,11 @@ export interface ApiTradicionTradicion extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    contenido: Schema.Attribute.Blocks;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    descripcion: Schema.Attribute.Blocks;
+    descripcion: Schema.Attribute.Text;
     imagen_principal: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true

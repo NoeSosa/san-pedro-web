@@ -57,26 +57,31 @@ try {
 
 <Layout title="Noticias y Comunicados | San Pedro Huamelula">
     <div
-        class="bg-blue-900 text-white py-20 text-center relative overflow-hidden"
+        class="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 text-white py-24 text-center relative overflow-hidden"
     >
-        <div class="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
+        <div
+            class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)] opacity-20"
+        >
+        </div>
         <div class="relative z-10 container mx-auto px-4">
-            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+            <h1 class="text-5xl md:text-6xl font-black mb-6 tracking-tight">
                 Noticias y Comunicados
             </h1>
-            <p class="text-blue-200 text-lg max-w-2xl mx-auto font-light">
+            <p
+                class="text-blue-100 text-xl max-w-3xl mx-auto font-light leading-relaxed"
+            >
                 Mantente informado sobre las acciones, obras y eventos de tu
                 gobierno municipal.
             </p>
         </div>
     </div>
 
-    <section class="py-16 bg-gray-50 min-h-screen">
+    <section class="py-20 bg-gradient-to-b from-gray-50 to-white min-h-screen">
         <div class="container mx-auto px-6">
             <!-- Filtros -->
-            <div class="flex flex-wrap justify-center gap-3 mb-12">
+            <div class="flex flex-wrap justify-center gap-3 mb-14">
                 <button
-                    class="filter-btn active px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm bg-blue-900 text-white ring-2 ring-blue-900 ring-offset-2"
+                    class="filter-btn active px-6 py-3 rounded-full text-sm font-extrabold transition-all shadow-md bg-blue-600 text-white ring-2 ring-blue-600 ring-offset-2 hover:bg-blue-700 hover:shadow-lg"
                     data-filter="all"
                 >
                     Todas
@@ -84,7 +89,7 @@ try {
                 {
                     etiquetas.map((tag) => (
                         <button
-                            class="filter-btn px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm bg-white text-gray-600 hover:bg-gray-100 hover:text-blue-900 border border-gray-200"
+                            class="filter-btn px-6 py-3 rounded-full text-sm font-bold transition-all shadow-sm bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md hover:text-blue-700 border-2 border-gray-200 hover:border-blue-300"
                             data-filter={tag.nombre}
                         >
                             {tag.nombre}

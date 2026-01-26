@@ -90,33 +90,38 @@ const formatDate = (dateString: string) => {
 <Layout title="San Pedro Huamelula | Tradición y Progreso">
 	<section
 		id="inicio"
-		class="relative h-[85vh] flex items-center justify-center bg-gray-900 overflow-hidden"
+		class="relative h-[90vh] flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 overflow-hidden"
 	>
 		<div class="absolute inset-0 z-0">
 			<img
 				src="/San_Pedro_Huamelula.jpg"
 				alt="San Pedro Huamelula"
-				class="w-full h-full object-cover opacity-40"
+				class="w-full h-full object-cover opacity-30"
 			/>
 			<div
-				class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/90"
+				class="absolute inset-0 bg-gradient-to-b from-blue-900/60 via-blue-800/70 to-gray-900/90"
+			>
+			</div>
+			{/* Patrón decorativo */}
+			<div
+				class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"
 			>
 			</div>
 		</div>
 
 		<div
-			class="relative z-10 text-center px-4 max-w-5xl mx-auto text-white"
+			class="relative z-10 text-center px-4 max-w-6xl mx-auto text-white"
 		>
 			<h1
-				class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight drop-shadow-2xl"
+				class="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight drop-shadow-2xl animate-fade-in"
 			>
 				Bienvenidos a la <span
-					class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500"
+					class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 animate-pulse"
 					>Tierra Chontal</span
 				>
 			</h1>
 			<p
-				class="text-xl md:text-2xl mb-10 text-gray-200 font-light max-w-2xl mx-auto"
+				class="text-xl md:text-2xl lg:text-3xl mb-12 text-blue-50 font-light max-w-3xl mx-auto leading-relaxed"
 			>
 				Donde la tradición milenaria se une con el futuro. <br
 					class="hidden md:block"
@@ -124,42 +129,52 @@ const formatDate = (dateString: string) => {
 			</p>
 			<a
 				href="#gobierno"
-				class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-blue-900 font-pj rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900 hover:bg-blue-800"
+				class="group relative inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white transition-all duration-300 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-500 hover:to-blue-600 shadow-2xl hover:shadow-blue-500/50 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
 			>
 				Conoce a tu Ayuntamiento
 				<svg
-					class="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1"
+					class="w-5 h-5 ml-3 transition-transform group-hover:translate-x-2"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 					><path
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						stroke-width="2"
+						stroke-width="2.5"
 						d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg
 				>
 			</a>
 		</div>
 	</section>
 
-	<section id="tradicion" class="py-24 container mx-auto px-6">
-		<div class="text-center mb-16">
+	<section
+		id="tradicion"
+		class="py-28 container mx-auto px-6 bg-gradient-to-b from-white to-gray-50"
+	>
+		<div class="text-center mb-20">
 			<span
-				class="text-blue-600 font-bold tracking-wider uppercase text-sm"
+				class="inline-block text-blue-600 font-extrabold tracking-widest uppercase text-sm bg-blue-50 px-4 py-2 rounded-full mb-4"
 				>Cultura Viva</span
 			>
-			<h2 class="text-4xl md:text-5xl font-bold text-gray-900 mt-2 mb-4">
+			<h2
+				class="text-5xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight"
+			>
 				Nuestra Identidad
 			</h2>
-			<div class="w-24 h-1.5 bg-yellow-500 mx-auto rounded-full"></div>
+			<div
+				class="w-32 h-2 bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 mx-auto rounded-full"
+			>
+			</div>
 		</div>
 
 		{
 			tradiciones.length > 0 ? (
 				<TraditionCarousel client:visible tradiciones={tradiciones} />
 			) : (
-				<div class="text-center p-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-					<p class="text-gray-500 text-lg">Cargando tradiciones...</p>
+				<div class="text-center p-16 bg-white rounded-3xl border-2 border-dashed border-gray-200 shadow-sm">
+					<p class="text-gray-400 text-lg font-medium">
+						Cargando tradiciones...
+					</p>
 				</div>
 			)
 		}
@@ -258,23 +273,25 @@ const formatDate = (dateString: string) => {
 		</div>
 	</section>
 
-	<section id="noticias" class="py-24 bg-white">
+	<section id="noticias" class="py-28 bg-gradient-to-b from-gray-50 to-white">
 		<div class="container mx-auto px-6">
 			<div
-				class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4"
+				class="flex flex-col md:flex-row justify-between items-end mb-16 gap-4"
 			>
 				<div>
 					<span
-						class="text-blue-600 font-bold tracking-wider uppercase text-sm"
+						class="inline-block text-blue-600 font-extrabold tracking-widest uppercase text-sm bg-blue-50 px-4 py-2 rounded-full mb-4"
 						>Transparencia y Avance</span
 					>
-					<h2 class="text-4xl font-bold text-gray-900 mt-2">
+					<h2
+						class="text-5xl md:text-6xl font-black text-gray-900 tracking-tight"
+					>
 						Acciones de Gobierno
 					</h2>
 				</div>
 				<a
 					href="/noticias"
-					class="hidden md:inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+					class="hidden md:inline-flex items-center px-7 py-3.5 border-2 border-gray-200 shadow-sm text-sm font-bold rounded-full text-gray-700 bg-white hover:bg-gray-50 hover:border-blue-300 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
 				>
 					Ver todas las noticias
 				</a>
@@ -341,7 +358,8 @@ const formatDate = (dateString: string) => {
 											src={getStrapiMedia(
 												noticia.imagen_destacada?.[0]
 													?.formats?.small?.url ||
-													noticia.imagen_destacada?.[0]
+													noticia
+														.imagen_destacada?.[0]
 														?.url,
 											)}
 											alt={noticia.titulo}
