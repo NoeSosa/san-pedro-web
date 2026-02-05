@@ -31,6 +31,8 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
                 <img
                     src={images[0].url}
                     alt={images[0].alt}
+                    width={images[0].width}
+                    height={images[0].height}
                     className="w-full h-full object-cover"
                     loading="eager"
                 />
@@ -67,14 +69,16 @@ export default function ImageCarousel({ images }: ImageCarouselProps) {
                 className="image-carousel"
                 style={{ aspectRatio: '16/9' }}
             >
-                {images.map((image, index) => (
-                    <SwiperSlide key={index}>
+                {images.map((image) => (
+                    <SwiperSlide key={image.url}>
                         <div className="relative w-full h-full bg-gray-900">
                             <img
                                 src={image.url}
                                 alt={image.alt}
+                                width={image.width}
+                                height={image.height}
                                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                                loading={index === 0 ? 'eager' : 'lazy'}
+                                loading={images.indexOf(image) === 0 ? 'eager' : 'lazy'}
                             />
                             {/* Overlay sutil para mejor contraste */}
                             <div className="absolute inset-0 bg-black/5 pointer-events-none" />

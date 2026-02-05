@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { getStrapiMedia } from '../lib/strapi';
 import type { StrapiData, TradicionAttributes } from '../interfaces/strapi';
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
 
 // Estilos de Swiper
 import 'swiper/css';
@@ -14,7 +15,7 @@ interface TraditionCarouselProps {
 }
 
 // Helper function to extract plain text from BlocksContent
-const extractTextFromBlocks = (blocks: any): string => {
+const extractTextFromBlocks = (blocks: BlocksContent): string => {
     if (!blocks || !Array.isArray(blocks)) return '';
 
     let text = '';
@@ -56,13 +57,19 @@ export default function TraditionCarousel({ tradiciones }: TraditionCarouselProp
                 // Extraemos la primera imagen del array (ya que Strapi devuelve un array)
                 const imgData = imagen_principal?.[0];
 
-                const imageUrl = getStrapiMedia(
-                    imgData?.formats?.medium?.url ||
-                    imgData?.url
-                );
+                // Determinamos qué formato usar (medium o original) para obtener URL y dimensiones consistentes
+                const imgFormat = imgData?.formats?.medium || imgData;
+                const imageUrl = getStrapiMedia(imgFormat?.url);
+                const imgWidth = imgFormat?.width;
+                const imgHeight = imgFormat?.height;
 
-                // Extraer texto plano de la descripción (BlocksContent)
-                const descripcionTexto = extractTextFromBlocks(descripcion);
+                // Extraer texto plano de la descripción (que puede ser string o BlocksContent)
+                let descripcionTexto = '';
+                if (typeof descripcion === 'string') {
+                    descripcionTexto = descripcion;
+                } else if (Array.isArray(descripcion)) {
+                    descripcionTexto = extractTextFromBlocks(descripcion as unknown as BlocksContent);
+                }
 
                 return (
                     <SwiperSlide key={tradicion.documentId || tradicion.id} className="pb-12">
@@ -72,6 +79,8 @@ export default function TraditionCarousel({ tradiciones }: TraditionCarouselProp
                                     <img
                                         src={imageUrl}
                                         alt={titulo}
+                                        width={imgWidth}
+                                        height={imgHeight}
                                         className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
                                         loading="lazy"
                                     />

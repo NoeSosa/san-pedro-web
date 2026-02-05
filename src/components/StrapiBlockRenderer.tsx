@@ -46,6 +46,8 @@ export default function StrapiBlockRenderer({ content }: StrapiBlockRendererProp
                                 <img
                                     src={imageUrl}
                                     alt={image.alternativeText || 'Imagen'}
+                                    width={image.width}
+                                    height={image.height}
                                     className="w-full h-auto object-cover rounded-2xl shadow-xl border border-gray-100"
                                     loading="lazy"
                                 />
