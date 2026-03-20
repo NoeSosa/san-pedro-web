@@ -1,0 +1,84 @@
+services:
+  # 1. BASE DE DATOS (Postgres)
+  strapiDB:
+    image: postgres:16-alpine
+    container_name: san_pedro_db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    networks:
+      - san-pedro-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. CMS (Strapi)
+  strapi:
+    container_name: san_pedro_cms
+    build: ./strapi
+    image: san-pedro-strapi:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: strapiDB
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_SSL: 'false'
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      APP_KEYS: ${APP_KEYS}
+      API_TOKEN_SALT: ${API_TOKEN_SALT}
+      TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT}
+      NODE_ENV: production
+      PUBLIC_URL: https://admin.sanpedrohuamelula.pro # CAMBIA ESTO A TU SUBDOMINIO DE ADMIN
+      NODE_OPTIONS: --max-old-space-size=8192
+      SHARP_IGNORE_GLOBAL_LIBVIPS: 1
+    volumes:
+      - ./strapi/public/uploads:/opt/app/public/uploads
+    ports:
+      - "1337:1337"
+    networks:
+      - san-pedro-net
+    depends_on:
+      strapiDB:
+        condition: service_healthy
+
+# 3. FRONTEND (Astro) - ¡AQUÍ FALTABA LA CONFIGURACIÓN!
+  san-pedro:
+    container_name: san_pedro_frontend
+    # Le decimos que el Dockerfile está en la carpeta actual (raíz)
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "4321:4321"
+    environment:
+
+      # Esta es para el NAVEGADOR del usuario (imágenes, links):
+      - PUBLIC_STRAPI_URL=https://admin.sanpedrohuamelula.pro
+      # Esta es para el SERVIDOR INTERNO (fetch de datos):
+      - STRAPI_URL=http://strapi:1337
+      - STRAPI_API_TOKEN=${STRAPI_API_TOKEN}
+      # Variables de Host para Astro
+      - HOST=0.0.0.0
+      - PORT=4321
+      # Variable legacy (puedes dejarla o quitarla si ya limpiaste el código)
+      - PUBLIC_KEYSTATIC_MODE=github
+    depends_on:
+      - strapi
+    networks:
+      - san-pedro-net
+
+networks:
+  san-pedro-net:
+    driver: bridge
