@@ -4,13 +4,12 @@ services:
     image: postgres:16-alpine
     container_name: san_pedro_db
     restart: unless-stopped
-    env_file: .env
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     volumes:
-      - ./db-data:/var/lib/postgresql/data
+      - san_pedro_db_data:/var/lib/postgresql/data
     networks:
       - san-pedro-net
     healthcheck:
@@ -44,9 +43,9 @@ services:
       NODE_OPTIONS: --max-old-space-size=8192
       SHARP_IGNORE_GLOBAL_LIBVIPS: 1
     volumes:
-      - ./strapi/public/uploads:/opt/app/public/uploads
-    ports:
-      - "1337:1337"
+      - san_pedro_uploads:/opt/app/public/uploads
+    expose:
+      - "1337"
     networks:
       - san-pedro-net
     depends_on:
@@ -60,8 +59,8 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
-    ports:
-      - "4321:4321"
+    expose:
+      - "4321"
     environment:
 
       # Esta es para el NAVEGADOR del usuario (imágenes, links):
@@ -78,6 +77,10 @@ services:
       - strapi
     networks:
       - san-pedro-net
+
+volumes:
+  san_pedro_db_data:
+  san_pedro_uploads:
 
 networks:
   san-pedro-net:
